@@ -6,13 +6,34 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E46783AE2D6316AB00F3779C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = E46783AD2D6316AB00F3779C /* FirebaseAuth */; };
+		E46783B12D63172A00F3779C /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = E46783B02D63172A00F3779C /* GoogleSignIn */; };
+		E46783B32D63172A00F3779C /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = E46783B22D63172A00F3779C /* GoogleSignInSwift */; };
+		E46783C62D631F9200F3779C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = E46783C52D631F9200F3779C /* FirebaseCore */; };
+		E46783D62D633AD000F3779C /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = E46783D52D633AD000F3779C /* FirebaseStorage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		E467839A2D63163300F3779C /* RecipEAT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecipEAT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E46783BB2D63198C00F3779C /* Exceptions for "RecipEAT" folder in "RecipEAT" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E46783992D63163300F3779C /* RecipEAT */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E467839C2D63163300F3779C /* RecipEAT */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E46783BB2D63198C00F3779C /* Exceptions for "RecipEAT" folder in "RecipEAT" target */,
+			);
 			path = RecipEAT;
 			sourceTree = "<group>";
 		};
@@ -23,6 +44,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E46783B32D63172A00F3779C /* GoogleSignInSwift in Frameworks */,
+				E46783AE2D6316AB00F3779C /* FirebaseAuth in Frameworks */,
+				E46783C62D631F9200F3779C /* FirebaseCore in Frameworks */,
+				E46783D62D633AD000F3779C /* FirebaseStorage in Frameworks */,
+				E46783B12D63172A00F3779C /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				E467839C2D63163300F3779C /* RecipEAT */,
+				E46783AC2D6316AB00F3779C /* Frameworks */,
 				E467839B2D63163300F3779C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +70,13 @@
 				E467839A2D63163300F3779C /* RecipEAT.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E46783AC2D6316AB00F3779C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -65,6 +99,11 @@
 			);
 			name = RecipEAT;
 			packageProductDependencies = (
+				E46783AD2D6316AB00F3779C /* FirebaseAuth */,
+				E46783B02D63172A00F3779C /* GoogleSignIn */,
+				E46783B22D63172A00F3779C /* GoogleSignInSwift */,
+				E46783C52D631F9200F3779C /* FirebaseCore */,
+				E46783D52D633AD000F3779C /* FirebaseStorage */,
 			);
 			productName = RecipEAT;
 			productReference = E467839A2D63163300F3779C /* RecipEAT.app */;
@@ -94,6 +133,10 @@
 			);
 			mainGroup = E46783912D63163300F3779C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E46783AB2D63169400F3779C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				E46783AF2D63172A00F3779C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E467839B2D63163300F3779C /* Products */;
 			projectDirPath = "";
@@ -254,6 +297,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"RecipEAT/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RecipEAT/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -282,6 +326,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"RecipEAT/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RecipEAT/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -322,6 +367,53 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E46783AB2D63169400F3779C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.8.1;
+			};
+		};
+		E46783AF2D63172A00F3779C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E46783AD2D6316AB00F3779C /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E46783AB2D63169400F3779C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		E46783B02D63172A00F3779C /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E46783AF2D63172A00F3779C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		E46783B22D63172A00F3779C /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E46783AF2D63172A00F3779C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+		E46783C52D631F9200F3779C /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E46783AB2D63169400F3779C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		E46783D52D633AD000F3779C /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E46783AB2D63169400F3779C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E46783922D63163300F3779C /* Project object */;
 }
