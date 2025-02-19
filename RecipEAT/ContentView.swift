@@ -15,6 +15,7 @@ struct ContentView: View {
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
+                .customFont(.headline)
             
             Button{
                 Task {
@@ -26,6 +27,7 @@ struct ContentView: View {
                 }
             } label: {
                 Text("Log Out")
+                    .customFont(.subheadline)
                     .padding(8)
             }
             .buttonStyle(.borderedProminent)

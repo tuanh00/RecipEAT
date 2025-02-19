@@ -25,7 +25,6 @@
 		E4A9D0082D65C6B00079F130 /* Exceptions for "RecipEAT" folder in "RecipEAT" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"GoogleService-Info.plist",
 				Info.plist,
 			);
 			target = E46783992D63163300F3779C /* RecipEAT */;
