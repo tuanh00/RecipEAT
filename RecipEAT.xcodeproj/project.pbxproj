@@ -19,22 +19,9 @@
 		E467839A2D63163300F3779C /* RecipEAT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecipEAT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E46783BB2D63198C00F3779C /* Exceptions for "RecipEAT" folder in "RecipEAT" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = E46783992D63163300F3779C /* RecipEAT */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E467839C2D63163300F3779C /* RecipEAT */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E46783BB2D63198C00F3779C /* Exceptions for "RecipEAT" folder in "RecipEAT" target */,
-			);
 			path = RecipEAT;
 			sourceTree = "<group>";
 		};
