@@ -13,10 +13,12 @@
 		E46783C62D631F9200F3779C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = E46783C52D631F9200F3779C /* FirebaseCore */; };
 		E46783D62D633AD000F3779C /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = E46783D52D633AD000F3779C /* FirebaseStorage */; };
 		E4A9CF752D6598C30079F130 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = E4A9CF742D6598C30079F130 /* RiveRuntime */; };
+		E4A9CFF82D65BE940079F130 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = E4A9CFE82D65BE940079F130 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		E467839A2D63163300F3779C /* RecipEAT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecipEAT.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4A9CFE82D65BE940079F130 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -47,6 +49,7 @@
 		E46783912D63163300F3779C = {
 			isa = PBXGroup;
 			children = (
+				E4A9CFE82D65BE940079F130 /* .gitignore */,
 				E467839C2D63163300F3779C /* RecipEAT */,
 				E46783AC2D6316AB00F3779C /* Frameworks */,
 				E467839B2D63163300F3779C /* Products */,
@@ -143,6 +146,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4A9CFF82D65BE940079F130 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
