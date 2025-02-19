@@ -10,6 +10,29 @@ import SwiftUI
 struct ContentView: View {
     @State private var error: String = ""
     var body: some View {
+        TabView {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house")
+                }
+            SavedRecipesView()
+                .tabItem {
+                    Image(systemName: "book.pages.fill")
+                }
+            NewRecipeView()
+                .tabItem {
+                    Image(systemName: "plus.app.fill")
+                }
+            MealPlannerView()
+                .tabItem {
+                    Image(systemName: "calendar")
+                }
+            ProfileView()
+                .tabItem {
+                    Image(systemName: "person.fill")
+                }
+        }
+        
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
