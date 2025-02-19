@@ -1,5 +1,5 @@
 //
-//  RecipeCard.swift
+//  RecipeView.swift
 //  RecipEAT
 //
 //  Created by hazelclarisse on 2025-02-19.
@@ -42,27 +42,56 @@ let recipePosts: Recipe = Recipe(
     createdAt: Date()
 )
 
-struct RecipeCard: View {
+struct RecipeView: View {
     let recipe: Recipe
     
     // track recipe save status
     @State private var isSaved = false
     
     var body: some View {
-        VStack {
-            Text(recipe.title)
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-            
-            Image(recipe.imageUrl)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-            
-            Text(recipe.description)
-                .padding()
-            
-            HStack {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // title and category
+                HStack {
+                    Text(recipe.title)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    
+                    Text(recipe.category)
+                        .padding(5)
+                        .background(.dessert)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                
+                // image and description
+                Image(recipe.imageUrl)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .shadow(radius: 5)
+                
+                Text(recipe.description)
+                
+                // ingredients
+                Text("Ingredients:")
+                    .fontWeight(.bold)
+                
+                ForEach(recipe.ingredients, id: \.name) { ingredient in
+                    Text("\(ingredient.name) \(ingredient.quantity) \(ingredient.unit)")
+                }
+                
+                // steps
+                Text("Steps:")
+                    .fontWeight(.bold)
+                
+                ForEach(recipe.steps, id: \.self) { step in
+                    Text("- \(step)")
+                }
+                
+                // save button
                 //Image(systemName: "bookmark")
                 Button(action: {
                     //print("Recipe saved.")
@@ -80,24 +109,16 @@ struct RecipeCard: View {
                     .cornerRadius(5)
                 }
                 Spacer()
-                
-                Button(action: {
-                    
-                }) {
-                    HStack {
-                        Image(systemName: "ellipsis")
-                        Text("More")
-                    }
-                    .padding(5)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(5)
-                }
-            }.padding(.horizontal)
+            }
+            
+            //Text(recipe.ratings)
         }
+        .padding()
     }
 }
 
+
+
 #Preview {
-    RecipeCard(recipe: recipePosts)
+    RecipeView(recipe: recipePosts)
 }
