@@ -38,23 +38,23 @@ struct ContentView: View {
         }.padding()
         
         TabView {
-            HomeView()
+            HomeScreen()
                 .tabItem {
                     Image(systemName: "house")
                 }
-            SavedRecipesView()
+            SavedListScreen()
                 .tabItem {
                     Image(systemName: "book.pages.fill")
                 }
-            NewRecipeView()
+            CreateNewRecipeScreen()
                 .tabItem {
                     Image(systemName: "plus.app.fill")
                 }
-            MealPlannerView()
+            MealPlannerScreen()
                 .tabItem {
                     Image(systemName: "calendar")
                 }
-            ProfileView()
+            ProfileScreen()
                 .tabItem {
                     Image(systemName: "person.fill")
                 }
