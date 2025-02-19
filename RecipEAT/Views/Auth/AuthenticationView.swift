@@ -19,9 +19,7 @@ class AuthenticationView: ObservableObject {
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
         
-        GIDSignIn.sharedInstance.signIn(withPresenting: Application_utility.rootViewController) {
-            user, error in
-            
+        GIDSignIn.sharedInstance.signIn(withPresenting: Application_utility.rootViewController) { user, error in
             if let error = error {
                 print(error.localizedDescription)
                 return
@@ -35,8 +33,7 @@ class AuthenticationView: ObservableObject {
             
             let credential = GoogleAuthProvider.credential(withIDToken: idToken.tokenString, accessToken: accessToken.tokenString)
             
-            Auth.auth().signIn(with: credential) {
-                res, error in
+            Auth.auth().signIn(with: credential) { res, error in
                 if let error = error {
                     print(error.localizedDescription)
                     return
