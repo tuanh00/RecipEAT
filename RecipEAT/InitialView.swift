@@ -13,6 +13,7 @@ struct InitialView: View {
     
     
     var body: some View {
+       
         VStack {
             if userLoggedIn {
                 ContentView()

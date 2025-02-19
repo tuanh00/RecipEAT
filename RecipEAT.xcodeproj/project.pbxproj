@@ -12,6 +12,7 @@
 		E46783B32D63172A00F3779C /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = E46783B22D63172A00F3779C /* GoogleSignInSwift */; };
 		E46783C62D631F9200F3779C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = E46783C52D631F9200F3779C /* FirebaseCore */; };
 		E46783D62D633AD000F3779C /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = E46783D52D633AD000F3779C /* FirebaseStorage */; };
+		E4A9CF752D6598C30079F130 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = E4A9CF742D6598C30079F130 /* RiveRuntime */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 				E46783C62D631F9200F3779C /* FirebaseCore in Frameworks */,
 				E46783D62D633AD000F3779C /* FirebaseStorage in Frameworks */,
 				E46783B12D63172A00F3779C /* GoogleSignIn in Frameworks */,
+				E4A9CF752D6598C30079F130 /* RiveRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +106,7 @@
 				E46783B22D63172A00F3779C /* GoogleSignInSwift */,
 				E46783C52D631F9200F3779C /* FirebaseCore */,
 				E46783D52D633AD000F3779C /* FirebaseStorage */,
+				E4A9CF742D6598C30079F130 /* RiveRuntime */,
 			);
 			productName = RecipEAT;
 			productReference = E467839A2D63163300F3779C /* RecipEAT.app */;
@@ -136,6 +139,7 @@
 			packageReferences = (
 				E46783AB2D63169400F3779C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				E46783AF2D63172A00F3779C /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				E4A9CF732D6598C30079F130 /* XCRemoteSwiftPackageReference "rive-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E467839B2D63163300F3779C /* Products */;
@@ -385,6 +389,14 @@
 				minimumVersion = 8.0.0;
 			};
 		};
+		E4A9CF732D6598C30079F130 /* XCRemoteSwiftPackageReference "rive-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/rive-app/rive-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.6.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -412,6 +424,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E46783AB2D63169400F3779C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		E4A9CF742D6598C30079F130 /* RiveRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4A9CF732D6598C30079F130 /* XCRemoteSwiftPackageReference "rive-ios" */;
+			productName = RiveRuntime;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
