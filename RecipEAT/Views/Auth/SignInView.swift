@@ -16,6 +16,7 @@ struct SignInView: View {
     @State var loginError = ""
     @Binding var showModal: Bool
     @StateObject var authVM = AuthenticationView()  // for Google sign‑in
+    @State private var showSignup = false  // Controls SignupView presentation
     
     let check = RiveViewModel(fileName: "check", stateMachineName: "State Machine 1")
     let confetti = RiveViewModel(fileName: "confetti", stateMachineName: "State Machine 1")
@@ -97,6 +98,24 @@ struct SignInView: View {
                     .cornerRadius(20, corners: [.topRight, .bottomLeft, .bottomRight])
                     .cornerRadius(8, corners: [.topLeft])
                     .shadow(color: Color(hex: "F77D8E").opacity(0.5), radius: 20, x: 0, y: 10)
+            }
+            
+            // "Create Account" button
+            Button {
+                showSignup = true
+            } label: {
+                Text("Create Account")
+                    .customFont(.subheadline)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 24)
+                    .background(Color(hex: "F77D8E"))
+                    .foregroundColor(.white)
+                    .cornerRadius(16)
+                    .shadow(color: Color(hex: "F77D8E").opacity(0.5), radius: 10, x: 0, y: 5)
+                }
+                .padding(.top, 10)
+                .fullScreenCover(isPresented: $showSignup) {
+                SignupView(showModal: $showSignup)
             }
             
             // Google sign in icon/button:

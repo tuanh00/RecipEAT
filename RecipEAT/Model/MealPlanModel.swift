@@ -6,9 +6,10 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 struct MealPlan: Identifiable, Codable {
-    var id: String?
+    @DocumentID var id: String?
     var userId: String
     // var meals: [recipeId: String, date: Date]
     var meals: [Meals]
