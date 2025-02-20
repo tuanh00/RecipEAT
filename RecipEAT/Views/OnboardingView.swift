@@ -34,9 +34,10 @@ struct OnboardingView: View {
     var content: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Lorem Ipsum")
-            //                .font(.custom("Poppins Bold", size: 60, relativeTo: .largeTitle))
+            //.font(.custom("Figtree Regular", size: 60,relativeTo: .largeTitle))
                 .customFont(.largeTitle)
                 .frame(width: 260, alignment: .leading)
+              
             
             Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vitae condimentum neque. Proin augue mauris, luctus et ex sed, convallis tristique nunc.")
                 .customFont(.body)
