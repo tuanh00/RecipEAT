@@ -10,8 +10,9 @@ import FirebaseFirestore
 
 struct User: Identifiable, Codable {
     @DocumentID var id: String?
-    //var userId: String?
     var email: String
     var displayName: String
     var imageUrl: String
+    var password: String
+    var createdAt: Date
 }

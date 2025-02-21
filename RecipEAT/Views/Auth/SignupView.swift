@@ -8,6 +8,11 @@
 import SwiftUI
 import RiveRuntime
 
+
+enum SignupField: Hashable {
+    case username, email, password, confirmPassword
+}
+
 struct SignupView: View {
     @State private var displayName = ""
     @State private var email = ""
@@ -18,99 +23,171 @@ struct SignupView: View {
     @State private var navigateToSignin = false
     @Binding var showModal: Bool
     @EnvironmentObject var userService: UserFirebaseService
+    @FocusState private var focusedField:  SignupField?
     
     let check = RiveViewModel(fileName: "check", stateMachineName: "State Machine 1")
     let confetti = RiveViewModel(fileName: "confetti", stateMachineName: "State Machine 1")
     
+    //Email format checker
+    func isValidEmail(_ email: String) -> Bool {
+        // A simple regex pattern for a standard email format.
+        let emailRegEx = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        let predicate = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
+        return predicate.evaluate(with: email)
+    }
+    
     // Sign up function with animation feedback
     func signUp() {
-          guard password == confirmPassword else {
-              signupError = "Passwords do not match"
-              return
-          }
-          
-          isLoading = true
-          userService.createUser(displayName: displayName, email: email, password: password) { success, error in
-              DispatchQueue.main.async {
-                  if success {
-                      DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                          isLoading = false
-                          withAnimation {
-                              showModal = false
-                              navigateToSignin = true
-                          }
-                      }
-                  } else {
-                      signupError = error ?? "Sign-up failed"
-                      isLoading = false
-                  }
-              }
-          }
-      }
-      
+        //Clear previous error
+        signupError = ""
         
-        var body: some View {
-            VStack(spacing: 24) {
-                Text("Sign Up")
-                    .customFont(.largeTitle)
-                Text("Create an account to access exclusive content.")
-                    .customFont(.headline)
-                
-                VStack(alignment: .leading) {
-                    Text("Username")
-                        .customFont(.subheadline)
-                        .foregroundColor(.secondary)
-                    TextField("Enter your username", text: $displayName)
-                        .customAuthTextField()
+        //Validation order
+        if displayName.trimmingCharacters(in: .whitespaces).isEmpty {
+            signupError = "Username cannot be empty."
+            focusedField = .username
+            return
+        }
+        
+        if email.trimmingCharacters(in: .whitespaces).isEmpty {
+            signupError = "Email cannot be empty."
+            focusedField = .email
+            return
+        }
+        
+        if !isValidEmail(email) {
+            signupError = "Please enter a valid email format."
+            focusedField = .email
+            return
+        }
+        
+        if password.isEmpty {
+            signupError = "Password cannot be empty."
+            focusedField = .password
+            return
+        }
+        if confirmPassword.isEmpty {
+            signupError = "Please confirm your password."
+            focusedField = .confirmPassword
+            return
+        }
+        if password != confirmPassword {
+            signupError = "Passwords do not match."
+            focusedField = .confirmPassword
+            return
+        }
+        
+        isLoading = true
+        userService.createUser(displayName: displayName, email: email, password: password) { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        check.triggerInput("Check")
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        confetti.triggerInput("Trigger explosion")
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        withAnimation {
+                            isLoading = false
+                            showModal = false
+                            navigateToSignin = true
+                        }
+                    }
+                } else {
+                    signupError = error ?? "Sign-up failed"
+                    isLoading = false
                 }
-                
-                VStack(alignment: .leading) {
-                    Text("Email")
-                        .customFont(.subheadline)
-                        .foregroundColor(.secondary)
-                    TextField("Enter your email", text: $email)
-                        .customAuthTextField()
-                }
-                
-                VStack(alignment: .leading) {
-                    Text("Password")
-                        .customFont(.subheadline)
-                        .foregroundColor(.secondary)
-                    SecureField("Enter your password", text: $password)
-                        .customAuthTextField(image: Image("Icon Lock"))
-                }
-                
-                VStack(alignment: .leading) {
-                    Text("Confirm Password")
-                        .customFont(.subheadline)
-                        .foregroundColor(.secondary)
-                    SecureField("Confirm your password", text: $confirmPassword)
-                        .customAuthTextField(image: Image("Icon Lock"))
-                }
-                
-                if !signupError.isEmpty {
-                    Text(signupError)
-                        .foregroundColor(.red)
-                        .customFont(.subheadline)
-                }
-                
-                Button {
-                    signUp()
-                } label: {
-                    Label("Sign Up", systemImage: "arrow.right")
+            }
+        }
+    }
+    
+    
+    var body: some View {
+            VStack {
+                Spacer()
+                VStack(spacing: 24) {
+                    Text("Sign Up")
+                        .customFont(.largeTitle)
+                    Text("Create an account to access exclusive content.")
                         .customFont(.headline)
-                        .padding(20)
-                        .frame(maxWidth: .infinity)
-                        .background(Color(hex: "F77D8E"))
-                        .foregroundColor(.white)
-                        .cornerRadius(20, corners: [.topRight, .bottomLeft, .bottomRight])
-                        .cornerRadius(8, corners: [.topLeft])
-                        .shadow(color: Color(hex: "F77D8E").opacity(0.5), radius: 20, x: 0, y: 10)
-                }
-                .fullScreenCover(
-                    isPresented: $navigateToSignin) {
+                    
+                    VStack(alignment: .leading) {
+                        Text("Username")
+                            .customFont(.subheadline)
+                            .foregroundColor(.secondary)
+                        TextField("Enter your username", text: $displayName)
+                            .customAuthTextField()
+                            .autocapitalization(.none)
+                            .focused($focusedField, equals: .username)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("Email")
+                            .customFont(.subheadline)
+                            .foregroundColor(.secondary)
+                        TextField("Enter your email", text: $email)
+                            .customAuthTextField()
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                            .focused($focusedField, equals: .email)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("Password")
+                            .customFont(.subheadline)
+                            .foregroundColor(.secondary)
+                        SecureField("Enter your password", text: $password)
+                            .customAuthTextField(image: Image("Icon Lock"))
+                            .autocapitalization(.none)
+                            .focused($focusedField, equals: .password)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("Confirm Password")
+                            .customFont(.subheadline)
+                            .foregroundColor(.secondary)
+                        SecureField("Confirm your password", text: $confirmPassword)
+                            .customAuthTextField(image: Image("Icon Lock"))
+                            .autocapitalization(.none)
+                            .focused($focusedField, equals: .confirmPassword)
+                    }
+                    
+                    if !signupError.isEmpty {
+                        Text(signupError)
+                            .foregroundColor(.red)
+                            .customFont(.subheadline)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    
+                    Button {
+                        signUp()
+                    } label: {
+                        Label("Sign Up", systemImage: "arrow.right")
+                            .customFont(.headline)
+                            .padding(20)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(hex: "F77D8E"))
+                            .foregroundColor(.white)
+                            .cornerRadius(20, corners: [.topRight, .bottomLeft, .bottomRight])
+                            .cornerRadius(8, corners: [.topLeft])
+                            .shadow(color: Color(hex: "F77D8E").opacity(0.5), radius: 20, x: 0, y: 10)
+                    }
+                    .fullScreenCover(isPresented: $navigateToSignin) {
                         SignInView(showModal: .constant(true))
                     }
+                }
+                Spacer()
+                
+                Button(action: {
+                    withAnimation {
+                        showModal = false
+                    }
+                }) {
+                    Image(systemName: "xmark.circle")
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .foregroundColor(.gray)
+                }
             }
             .padding(30)
             .background(.regularMaterial)
@@ -123,7 +200,6 @@ struct SignupView: View {
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing))
             )
-            .padding()
             .overlay(
                 ZStack {
                     if isLoading {
@@ -137,8 +213,8 @@ struct SignupView: View {
                 }
             )
         }
-}
+    }
 
-#Preview {
-    SignupView(showModal: .constant(true))
-}
+    #Preview {
+        SignupView(showModal: .constant(true))
+    }

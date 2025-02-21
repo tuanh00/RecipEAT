@@ -8,6 +8,7 @@
 import SwiftUI
 import RiveRuntime
 import FirebaseAuth
+import FirebaseFirestore
 
 struct SignInView: View {
     @State var email = ""
@@ -17,41 +18,42 @@ struct SignInView: View {
     @Binding var showModal: Bool
     @StateObject var authVM = AuthenticationView()  // for Google sign‑in
     @State private var showSignup = false  // Controls SignupView presentation
+    @EnvironmentObject var userService: UserFirebaseService
     
     let check = RiveViewModel(fileName: "check", stateMachineName: "State Machine 1")
-    let confetti = RiveViewModel(fileName: "confetti", stateMachineName: "State Machine 1")
     
-    // Email/Password sign in with animation feedback
+    // Email/Password sign in
     func logInWithEmail() {
         isLoading = true
         Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
             if let error = error {
                 DispatchQueue.main.async {
                     loginError = error.localizedDescription
-                    check.triggerInput("Error")
                     isLoading = false
                 }
                 return
             }
-            // On success, trigger animation then dismiss the view.
-            DispatchQueue.main.async {
-                check.triggerInput("Reset")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    check.triggerInput("Check")
+            guard let firebaseUser = authResult?.user else { return }
+            let userDoc = Firestore.firestore().collection("users").document(firebaseUser.uid)
+            userDoc.getDocument { snapshot, error in
+                if let error = error {
+                    print("Error fetching user document: \(error.localizedDescription)")
+                } else if let snapshot = snapshot, snapshot.exists,
+                          let userData = try? snapshot.data(as: User.self) {
+                    DispatchQueue.main.async {
+                        self.userService.currentUser = userData
+                    }
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    confetti.triggerInput("Trigger explosion")
-                    isLoading = false
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                     withAnimation {
                         showModal = false
                     }
+                    isLoading = false
                 }
             }
         }
     }
-    
+
     // Google sign in button action.
     func signInWithGoogle() {
         authVM.signInWithGoogle()
@@ -61,8 +63,6 @@ struct SignInView: View {
         VStack(spacing: 24) {
             Text("Sign In")
                 .customFont(.largeTitle)
-            Text("Access to exclusive content. Learn design and code.")
-                .customFont(.headline)
             
             VStack(alignment: .leading) {
                 Text("Email")
@@ -70,6 +70,8 @@ struct SignInView: View {
                     .foregroundColor(.secondary)
                 TextField("Enter your email", text: $email)
                     .customAuthTextField()
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
             }
             
             VStack(alignment: .leading) {
@@ -78,12 +80,14 @@ struct SignInView: View {
                     .foregroundColor(.secondary)
                 SecureField("Enter your password", text: $password)
                     .customAuthTextField(image: Image("Icon Lock"))
+                    .autocapitalization(.none)
             }
             
             if !loginError.isEmpty {
                 Text(loginError)
                     .foregroundColor(.red)
                     .customFont(.subheadline)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
             Button {
@@ -106,15 +110,11 @@ struct SignInView: View {
             } label: {
                 Text("Create Account")
                     .customFont(.subheadline)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 24)
-                    .background(Color(hex: "F77D8E"))
-                    .foregroundColor(.white)
-                    .cornerRadius(16)
-                    .shadow(color: Color(hex: "F77D8E").opacity(0.5), radius: 10, x: 0, y: 5)
-                }
-                .padding(.top, 10)
-                .fullScreenCover(isPresented: $showSignup) {
+                    .foregroundColor(Color(hex: "F77D8E"))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .fullScreenCover(isPresented: $showSignup) {
                 SignupView(showModal: $showSignup)
             }
             
@@ -148,11 +148,11 @@ struct SignInView: View {
                         .frame(width: 100, height: 100)
                         .allowsHitTesting(false)
                 }
-                confetti.view()
-                    .scaleEffect(3)
-                    .allowsHitTesting(false)
             }
         )
+        .onAppear {
+            authVM.userService = userService
+        }
     }
 }
 
