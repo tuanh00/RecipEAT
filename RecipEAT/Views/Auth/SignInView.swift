@@ -44,16 +44,19 @@ struct SignInView: View {
                         self.userService.currentUser = userData
                     }
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                    withAnimation {
-                        showModal = false
+                DispatchQueue.main.async {
+                    if let userData = self.userService.currentUser {
+                        print("User data loaded, closing SignInView.")
+                        withAnimation {
+                            showModal = false
+                        }
                     }
                     isLoading = false
                 }
             }
         }
     }
-
+    
     // Google sign in button action.
     func signInWithGoogle() {
         authVM.signInWithGoogle()
@@ -68,19 +71,22 @@ struct SignInView: View {
                 Text("Email")
                     .customFont(.subheadline)
                     .foregroundColor(.secondary)
-                TextField("Enter your email", text: $email)
-                    .customAuthTextField()
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
+                AuthTextField(text: $email,
+                              placeholder: "Enter your email",
+                              icon: UIImage(named: "Icon Email"))
+                .frame(height: 50)
+                .keyboardType(.emailAddress)
             }
             
             VStack(alignment: .leading) {
                 Text("Password")
                     .customFont(.subheadline)
                     .foregroundColor(.secondary)
-                SecureField("Enter your password", text: $password)
-                    .customAuthTextField(image: Image("Icon Lock"))
-                    .autocapitalization(.none)
+                AuthTextField(text: $password,
+                              placeholder: "Enter your password",
+                              icon: UIImage(named: "Icon Lock"),
+                              isSecure: true)
+                .frame(height: 50)
             }
             
             if !loginError.isEmpty {

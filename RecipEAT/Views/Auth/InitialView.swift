@@ -13,19 +13,24 @@ struct InitialView: View {
     @StateObject private var userService = UserFirebaseService()
     @State private var userLoggedIn = (Auth.auth().currentUser != nil)
     @State private var showSignIn = true
-        // controls presentation of SignInView
+    // controls presentation of SignInView
     var body: some View {
         ContentView()
             .fullScreenCover(isPresented: $showSignIn) {
                 // Pass the binding to allow SignInView to dismiss itself on success.
                 SignInView(showModal: $showSignIn)
-                //SignupView(showModal: $showSignup)
             }
             .onAppear {
                 _ = Auth.auth().addStateDidChangeListener { auth, user in
-                    userLoggedIn = (user != nil)
-                    // Show the sign in screen only when there’s no logged in user.
-                    showSignIn = (user == nil)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+                        if showSignIn {
+                            print("User is on Sign-In screen, keeping it open.")
+                        } else {
+                            print("Navigating to Home Screen.")
+                            userLoggedIn = (user != nil)
+                            showSignIn = (user == nil)
+                        }
+                    }
                 }
             }
             .environmentObject(userService)//environment object for SignupView
