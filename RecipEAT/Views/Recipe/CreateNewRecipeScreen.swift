@@ -12,7 +12,7 @@ struct CreateNewRecipeScreen: View {
     
     @State private var recipeTitle = ""
     @State private var recipeDescription = ""
-    @State private var selectedCategory = "General"
+    @State private var selectedCategory = "Breakfast"
     @State private var servings: Int = 1
     @State private var recipeImage: UIImage?
     @State private var showImagePicker = false
@@ -29,6 +29,8 @@ struct CreateNewRecipeScreen: View {
     
     @EnvironmentObject var recipeService: RecipeService
     @Environment(\.presentationMode) var presentationMode
+    
+    private let categories = ["Breakfast", "Brunch", "Lunch", "Snack", "Dinner", "Dessert"]
     
     var body: some View {
         NavigationStack {
@@ -98,6 +100,29 @@ struct CreateNewRecipeScreen: View {
                         }
                     }
                     
+                    // MARK: Category Slider
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Category")
+                            .customFont(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(categories, id: \.self) { cat in
+                                    Button(action: {
+                                        selectedCategory = cat
+                                    }) {
+                                        Text(cat)
+                                            .foregroundColor(selectedCategory == cat ? .white : .primary)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 8)
+                                            .background(selectedCategory == cat ? Color.pink : Color.gray.opacity(0.2))
+                                            .cornerRadius(16)
+                                    }
+                                }
+                            }
+                        }
+                    }
                     // Serving stepper
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Serving")
@@ -140,6 +165,8 @@ struct CreateNewRecipeScreen: View {
                                     .padding()
                                     .background(Color.pink.opacity(0.1))
                                     .cornerRadius(8)
+                                    .keyboardType(.numberPad)
+
                                 TextField("Ingredient", text: $ingredients[idx].name)
                                     .padding()
                                     .background(Color.pink.opacity(0.1))
@@ -149,6 +176,8 @@ struct CreateNewRecipeScreen: View {
                                     .padding()
                                     .background(Color.pink.opacity(0.1))
                                     .cornerRadius(8)
+                                    .keyboardType(.numberPad)
+                                
                                 Button(action: { ingredients.remove(at: idx) }) {
                                     Image(systemName: "trash")
                                         .foregroundColor(.red)
@@ -237,13 +266,13 @@ struct CreateNewRecipeScreen: View {
                 Alert(title: Text("Message"),
                       message: Text(alertMessage),
                       dismissButton: .default(Text("OK"), action: {
-                          // Reset the form fields
-                          resetForm()
-                          // Switch the selected tab in the parent TabView to MealPlannerScreen (tag 3)
-                          withAnimation {
-                              selectedTab = 3
-                          }
-                      }))
+                    // Reset the form fields
+                    resetForm()
+                    // Switch the selected tab in the parent TabView to MealPlannerScreen (tag 3)
+                    withAnimation {
+                        selectedTab = 3
+                    }
+                }))
             }
         }
     }
@@ -252,7 +281,7 @@ struct CreateNewRecipeScreen: View {
     private func resetForm() {
         recipeTitle = ""
         recipeDescription = ""
-        selectedCategory = "General"
+        selectedCategory = "Breakfast"
         servings = 1
         recipeImage = nil
         ingredients = [Ingredients(name: "", quantity: "1", unit: "")]
