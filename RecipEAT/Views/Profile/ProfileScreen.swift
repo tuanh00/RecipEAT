@@ -137,4 +137,5 @@ struct ProfileScreen: View {
 
 #Preview {
     ProfileScreen()
+        .environmentObject(UserFirebaseService())
 }
