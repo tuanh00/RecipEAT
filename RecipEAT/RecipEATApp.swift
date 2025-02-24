@@ -30,7 +30,6 @@ struct RecipEATApp: App {
     var body: some Scene {
         WindowGroup {
             InitialView()
-            //UploadImageView()
         }
     }
 }

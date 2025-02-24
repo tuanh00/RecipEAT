@@ -8,11 +8,259 @@
 import SwiftUI
 
 struct CreateNewRecipeScreen: View {
+    @Binding var selectedTab: Int
+    
+    @State private var recipeTitle = ""
+    @State private var recipeDescription = ""
+    @State private var selectedCategory = "General"
+    @State private var servings: Int = 1
+    @State private var recipeImage: UIImage?
+    @State private var showImagePicker = false
+    
+    @State private var ingredients: [Ingredients] = [
+        Ingredients(name: "", quantity: "1", unit: "")
+    ]
+    @State private var instructions: [String] = [""]
+    
+    @State private var isPublished: Bool = false
+    
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
+    @EnvironmentObject var recipeService: RecipeService
+    @Environment(\.presentationMode) var presentationMode
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    // Image selection
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.pink.opacity(0.1))
+                            .frame(height: 200)
+                        VStack(spacing: 8) {
+                            if let image = recipeImage {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(height: 180)
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                            } else {
+                                Image(systemName: "photo.on.rectangle.angled")
+                                    .customFont(.largeTitle)
+                                    .foregroundColor(.pink)
+                                Text("Tap to upload image")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .onTapGesture { showImagePicker = true }
+                    
+                    // Title Field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Title")
+                            .customFont(.body)
+                            .foregroundColor(.secondary)
+                        TextField("Recipe title", text: $recipeTitle)
+                            .customTextField()
+                            .customFont(.headline)
+                    }
+                    
+                    // Description Field
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Description")
+                            .customFont(.body)
+                            .foregroundColor(.secondary)
+                        ZStack(alignment: .topLeading) {
+                            if recipeDescription.isEmpty {
+                                Text("Enter description...")
+                                    .foregroundColor(.secondary.opacity(0.6))
+                                    .customFont(.headline)
+                                    .padding(.horizontal, 15)
+                                    .padding(.vertical, 8)
+                            }
+                            TextEditor(text: $recipeDescription)
+                                .frame(minHeight: 50)
+                                .scrollContentBackground(.hidden)
+                                .customTextField()
+                                .onChange(of: recipeDescription) {
+                                    if recipeDescription.count > 60 {
+                                        recipeDescription = String(recipeDescription.prefix(60))
+                                    }
+                                }
+                        }
+                        HStack {
+                            Spacer()
+                            Text("\(recipeDescription.count)/60")
+                                .customFont(.caption)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    
+                    // Serving stepper
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Serving")
+                            .customFont(.subheadline)
+                            .foregroundColor(.secondary)
+                        HStack {
+                            Button(action: { if servings > 1 { servings -= 1 } }) {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundColor(.pink)
+                                    .font(.title2)
+                            }
+                            Text("\(servings)")
+                                .font(.title3)
+                                .padding(.horizontal, 8)
+                            Button(action: { servings += 1 }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(.pink)
+                                    .customFont(.title2)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    
+                    // Publish toggle
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle("Create Recipe", isOn: $isPublished)
+                            .toggleStyle(SwitchToggleStyle(tint: .pink))
+                            .customFont(.headline)
+                    }
+                    
+                    // Ingredients Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Ingredients")
+                            .customFont(.body)
+                            .foregroundColor(.secondary)
+                        ForEach(ingredients.indices, id: \.self) { idx in
+                            HStack {
+                                TextField("Qty", text: $ingredients[idx].quantity)
+                                    .frame(width: 60)
+                                    .padding()
+                                    .background(Color.pink.opacity(0.1))
+                                    .cornerRadius(8)
+                                TextField("Ingredient", text: $ingredients[idx].name)
+                                    .padding()
+                                    .background(Color.pink.opacity(0.1))
+                                    .cornerRadius(8)
+                                TextField("Unit", text: $ingredients[idx].unit)
+                                    .frame(width: 60)
+                                    .padding()
+                                    .background(Color.pink.opacity(0.1))
+                                    .cornerRadius(8)
+                                Button(action: { ingredients.remove(at: idx) }) {
+                                    Image(systemName: "trash")
+                                        .foregroundColor(.red)
+                                }
+                            }
+                        }
+                        Button(action: {
+                            ingredients.append(Ingredients(name: "", quantity: "1", unit: ""))
+                        }) {
+                            Text("+ Add Ingredient")
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.pink)
+                                .cornerRadius(8)
+                        }
+                    }
+                    
+                    // Instructions Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Instructions")
+                            .customFont(.body)
+                            .foregroundColor(.secondary)
+                        ForEach(instructions.indices, id: \.self) { idx in
+                            HStack {
+                                TextField("Instruction \(idx+1)", text: $instructions[idx])
+                                    .customTextField()
+                                Button(action: { instructions.remove(at: idx) }) {
+                                    Image(systemName: "trash")
+                                        .foregroundColor(.red)
+                                }
+                            }
+                        }
+                        Button(action: { instructions.append("") }) {
+                            Text("+ Add Instruction")
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.pink)
+                                .cornerRadius(8)
+                        }
+                    }
+                    
+                    // Publish button
+                    Button(action: {
+                        recipeService.publishRecipe(
+                            title: recipeTitle,
+                            description: recipeDescription,
+                            ingredients: ingredients,
+                            instructions: instructions,
+                            servings: servings,
+                            category: selectedCategory,
+                            image: recipeImage,
+                            isPublished: isPublished
+                        ) { success, errorMsg in
+                            if success {
+                                alertMessage = "Recipe published successfully!"
+                            } else {
+                                alertMessage = errorMsg ?? "Failed to publish recipe."
+                            }
+                            showAlert = true
+                        }
+                    }) {
+                        Text("Visible to Everyone")
+                            .customFont(.body)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.pink)
+                            .cornerRadius(12)
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("Create Recipe")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        Image(systemName: "chevron.backward")
+                            .foregroundColor(.pink)
+                    }
+                }
+            }
+            .sheet(isPresented: $showImagePicker) {
+                ImagePicker(selectedImage: $recipeImage)
+            }
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("Message"),
+                      message: Text(alertMessage),
+                      dismissButton: .default(Text("OK"), action: {
+                          // Reset the form fields
+                          resetForm()
+                          // Switch the selected tab in the parent TabView to MealPlannerScreen (tag 3)
+                          withAnimation {
+                              selectedTab = 3
+                          }
+                      }))
+            }
+        }
+    }
+    
+    // Helper function to reset all form fields
+    private func resetForm() {
+        recipeTitle = ""
+        recipeDescription = ""
+        selectedCategory = "General"
+        servings = 1
+        recipeImage = nil
+        ingredients = [Ingredients(name: "", quantity: "1", unit: "")]
+        instructions = [""]
+        isPublished = false
     }
 }
 
 #Preview {
-    CreateNewRecipeScreen()
+    CreateNewRecipeScreen(selectedTab: .constant(2))
 }

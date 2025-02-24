@@ -10,18 +10,18 @@ import FirebaseFirestore
 
 struct Recipe: Identifiable, Codable {
     @DocumentID var id: String?
-    var recipeId: String
     var imageUrl: String
     var title: String
     var description: String
-    //var ingredients: [name: String, quantity: String, unit: String]
     var ingredients: [Ingredients]
-    var steps: [String]
+    var instructions: [String]
     var userId: String
     var category: String
     var ratings: [String]
     var review: [String]
+    var servings: Int
     var createdAt: Date
+    var isPublished: Bool
 }
 
 struct Ingredients: Codable {

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var error: String = ""
+    @State private var selectedTab: Int = 0
+
     var body: some View {
         VStack {
             Button{
@@ -31,27 +33,33 @@ struct ContentView: View {
                 .font(.caption)
         }.padding()
         
-        TabView {
+        TabView(selection: $selectedTab) {
             HomeScreen()
                 .tabItem {
                     Image(systemName: "house")
                 }
+                .tag(0)
+
             SavedListScreen()
                 .tabItem {
                     Image(systemName: "book.pages.fill")
-                }
-            CreateNewRecipeScreen()
+                }.tag(1)
+
+            CreateNewRecipeScreen(selectedTab: $selectedTab)
                 .tabItem {
                     Image(systemName: "plus.app.fill")
-                }
-            MealPlannerScreen()
+                }.tag(2)
+
+            MealPlannerScreen(selectedTab: $selectedTab)
                 .tabItem {
                     Image(systemName: "calendar")
-                }
+                }.tag(3)
+
             ProfileScreen()
                 .tabItem {
                     Image(systemName: "person.fill")
-                }
+                }.tag(4)
+
         }
     }
 }

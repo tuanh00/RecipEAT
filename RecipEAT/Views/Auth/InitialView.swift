@@ -9,8 +9,10 @@ import SwiftUI
 import FirebaseAuth
 
 struct InitialView: View {
-    //environment object for SignupView
+    //environment objects
     @StateObject private var userService = UserFirebaseService()
+    @StateObject private var recipeService = RecipeService()
+
     @State private var userLoggedIn = (Auth.auth().currentUser != nil)
     @State private var showSignIn = true
     // controls presentation of SignInView
@@ -34,6 +36,7 @@ struct InitialView: View {
                 }
             }
             .environmentObject(userService)//environment object for SignupView
+            .environmentObject(recipeService)   // Inject RecipeService here
     }
 }
 

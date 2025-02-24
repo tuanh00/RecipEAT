@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct MealPlannerScreen: View {
+    @Binding var selectedTab: Int
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Text("Meal Planner Screen")
     }
 }
 
 #Preview {
-    MealPlannerScreen()
+    MealPlannerScreen(selectedTab: .constant(3))
 }
