@@ -13,7 +13,7 @@ struct CustomTextField: ViewModifier {
             .padding(.horizontal, 15)
             .padding(.vertical, 10)
             .background(Color.pink.opacity(0.1))
-            .cornerRadius(30)
+            .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke()

@@ -38,13 +38,13 @@ struct CreateNewRecipeScreen: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.pink.opacity(0.1))
-                            .frame(height: 200)
+                            .frame(width: 380, height: 200)
                         VStack(spacing: 8) {
                             if let image = recipeImage {
                                 Image(uiImage: image)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(height: 180)
+                                    .frame(width: 370, height: 190)
                                     .clipShape(RoundedRectangle(cornerRadius: 16))
                             } else {
                                 Image(systemName: "photo.on.rectangle.angled")
@@ -77,11 +77,11 @@ struct CreateNewRecipeScreen: View {
                                 Text("Enter description...")
                                     .foregroundColor(.secondary.opacity(0.6))
                                     .customFont(.headline)
-                                    .padding(.horizontal, 15)
-                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 18)
+                                    .padding(.vertical, 18)
                             }
                             TextEditor(text: $recipeDescription)
-                                .frame(minHeight: 50)
+                                .frame(minHeight: 80)
                                 .scrollContentBackground(.hidden)
                                 .customTextField()
                                 .onChange(of: recipeDescription) {
@@ -90,6 +90,7 @@ struct CreateNewRecipeScreen: View {
                                     }
                                 }
                         }
+                        
                         HStack {
                             Spacer()
                             Text("\(recipeDescription.count)/60")
@@ -237,13 +238,13 @@ struct CreateNewRecipeScreen: View {
                 Alert(title: Text("Message"),
                       message: Text(alertMessage),
                       dismissButton: .default(Text("OK"), action: {
-                          // Reset the form fields
-                          resetForm()
-                          // Switch the selected tab in the parent TabView to MealPlannerScreen (tag 3)
-                          withAnimation {
-                              selectedTab = 3
-                          }
-                      }))
+                    // Reset the form fields
+                    resetForm()
+                    // Switch the selected tab in the parent TabView to MealPlannerScreen (tag 3)
+                    withAnimation {
+                        selectedTab = 3
+                    }
+                }))
             }
         }
     }
