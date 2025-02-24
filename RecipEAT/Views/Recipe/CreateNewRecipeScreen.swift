@@ -123,7 +123,7 @@ struct CreateNewRecipeScreen: View {
                     
                     // Publish toggle
                     VStack(alignment: .leading, spacing: 8) {
-                        Toggle("Create Recipe", isOn: $isPublished)
+                        Toggle("Visible to Everyone", isOn: $isPublished)
                             .toggleStyle(SwitchToggleStyle(tint: .pink))
                             .customFont(.headline)
                     }
@@ -210,7 +210,7 @@ struct CreateNewRecipeScreen: View {
                             showAlert = true
                         }
                     }) {
-                        Text("Visible to Everyone")
+                        Text("Create recipe")
                             .customFont(.body)
                             .foregroundColor(.white)
                             .padding()
