@@ -12,7 +12,8 @@ struct InitialView: View {
     //environment objects
     @StateObject private var userService = UserFirebaseService()
     @StateObject private var recipeService = RecipeService()
-
+    @StateObject private var mealPlanService = MealPlanService()
+    
     @State private var userLoggedIn = (Auth.auth().currentUser != nil)
     @State private var showSignIn = true
     // controls presentation of SignInView
@@ -37,6 +38,8 @@ struct InitialView: View {
             }
             .environmentObject(userService)//environment object for SignupView
             .environmentObject(recipeService)   // Inject RecipeService here
+            .environmentObject(mealPlanService)
+
     }
 }
 

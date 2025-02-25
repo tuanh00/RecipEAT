@@ -48,12 +48,15 @@ class RecipeService: ObservableObject {
                        image: UIImage?,
                        isPublished: Bool,
                        completion: @escaping (Bool, String?) -> Void) {
+        let lowerTitle = title.lowercased()
+        let lowerDesc = description.lowercased()
+        
         guard let currentUserId = Auth.auth().currentUser?.uid else {
             completion(false, "User not logged in.")
             return
         }
         
-        let recipe = Recipe(imageUrl: "", title: title, description: description, ingredients: ingredients, instructions: instructions, userId: currentUserId, category: category, ratings: [], review: [], servings: servings, createdAt: Date(), isPublished: isPublished)
+        let recipe = Recipe(imageUrl: "", title: lowerTitle, description: lowerDesc, ingredients: ingredients, instructions: instructions, userId: currentUserId, category: category, ratings: [], review: [], servings: servings, createdAt: Date(), isPublished: isPublished)
         createRecipe(recipe: recipe, image: image, completion: completion)
     }
     // 2) Upload recipe image to Firebase Storage
@@ -110,4 +113,61 @@ class RecipeService: ObservableObject {
             }
         }
     }
+    
+    //Searches recipes whose title OR description starts with a given prefix
+    func searchRecipes(prefix: String, completion: @escaping ([Recipe], Error?) -> Void) {
+        let lowerPrefix = prefix.lowercased()
+        let collection = db.collection("recipes")
+        var results: [Recipe] = []
+        var errors: [Error] = []
+        
+        let group = DispatchGroup()
+        
+        // 1) Query for matching titles (case-insensitive)
+        group.enter()
+        collection
+            .whereField("title", isGreaterThanOrEqualTo: lowerPrefix)
+            .whereField("title", isLessThan: lowerPrefix + "\u{f8ff}")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    errors.append(error)
+                } else if let snapshot = snapshot {
+                    let found = snapshot.documents.compactMap { doc in
+                        try? doc.data(as: Recipe.self)
+                    }
+                    results.append(contentsOf: found)
+                }
+                group.leave()
+            }
+        
+        // 2) Query for matching descriptions (case-insensitive)
+        group.enter()
+        collection
+            .whereField("description", isGreaterThanOrEqualTo: lowerPrefix)
+            .whereField("description", isLessThan: lowerPrefix + "\u{f8ff}")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    errors.append(error)
+                } else if let snapshot = snapshot {
+                    let found = snapshot.documents.compactMap { doc in
+                        try? doc.data(as: Recipe.self)
+                    }
+                    results.append(contentsOf: found)
+                }
+                group.leave()
+            }
+        
+        // Combine results once both queries finish
+        group.notify(queue: .main) {
+            let uniqueResults = Dictionary(grouping: results, by: \.id)
+                .compactMap { $0.value.first }
+            if let firstError = errors.first {
+                completion(Array(uniqueResults), firstError)
+            } else {
+                completion(Array(uniqueResults), nil)
+            }
+        }
+    }
 }
+
+

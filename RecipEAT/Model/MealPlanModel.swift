@@ -10,13 +10,18 @@ import FirebaseFirestore
 
 struct MealPlan: Identifiable, Codable {
     @DocumentID var id: String?
-    var userId: String
-    // var meals: [recipeId: String, date: Date]
-    var meals: [Meals]
-    var createdAt: Date
+    var userId: String = ""
+    var startDate: Date = Date()
+    var endDate: Date = Date()
+    var meals: [Meal] = []
+    var createdAt: Date = Date()
 }
 
-struct Meals: Codable {
-    var recipeId: String
-    var date: Date
+struct Meal: Identifiable, Codable {
+    var id: String = UUID().uuidString
+    var recipeName: String = ""
+    var date: Date = Date()
+    var notes: String = ""
+    var category: String = ""
 }
+

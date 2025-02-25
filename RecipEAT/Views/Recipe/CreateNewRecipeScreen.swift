@@ -222,6 +222,7 @@ struct CreateNewRecipeScreen: View {
                     
                     // Publish button
                     Button(action: {
+                        
                         recipeService.publishRecipe(
                             title: recipeTitle,
                             description: recipeDescription,
