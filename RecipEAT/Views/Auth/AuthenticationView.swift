@@ -94,3 +94,4 @@ class AuthenticationView: ObservableObject {
         userService?.currentUser = nil
     }
 }
+

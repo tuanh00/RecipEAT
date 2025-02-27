@@ -222,7 +222,12 @@ struct CreateNewRecipeScreen: View {
                     
                     // Publish button
                     Button(action: {
-                        
+                        guard !recipeTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                                  !recipeDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                                alertMessage = "Please enter a title and description atleast before publishing your recipe."
+                                showAlert = true
+                                return
+                        }
                         recipeService.publishRecipe(
                             title: recipeTitle,
                             description: recipeDescription,
