@@ -57,6 +57,8 @@ class AuthenticationView: ObservableObject {
                         print("Fetched user data: \(userData)")
                         DispatchQueue.main.async {
                             self.userService?.currentUser = userData
+                            self.isLoginSuccessed = true
+                            NotificationCenter.default.post(name: Notification.Name("GoToHomeTab"), object: nil)
                         }
                     } else {
                         // No document exists, so create one using Google profile info.
@@ -66,7 +68,7 @@ class AuthenticationView: ObservableObject {
                                            email: firebaseUser.email ?? "",
                                            displayName: displayName,
                                            imageUrl: imageUrl,
-                                           password: "",  // No password for Gmail sign‑in.
+                                           password: "",  // No need to save password for Gmail sign‑in.
                                            createdAt: Date())
                         do {
                             try Firestore.firestore().collection("users").document(firebaseUser.uid).setData(from: newUser) { err in
@@ -76,6 +78,7 @@ class AuthenticationView: ObservableObject {
                                     print("Created new user document for Gmail user.")
                                     DispatchQueue.main.async {
                                         self.userService?.currentUser = newUser
+                                        self.isLoginSuccessed = true
                                     }
                                 }
                             }

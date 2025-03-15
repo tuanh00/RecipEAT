@@ -48,6 +48,7 @@ struct SignInView: View {
                     if let userData = self.userService.currentUser {
                         print("User data loaded, closing SignInView.")
                         withAnimation {
+                            NotificationCenter.default.post(name: Notification.Name("GoToHomeTab"), object: nil)
                             showModal = false
                         }
                     }
@@ -158,6 +159,14 @@ struct SignInView: View {
         )
         .onAppear {
             authVM.userService = userService
+        }
+        .onReceive(authVM.$isLoginSuccessed) {
+            success in
+            if success {
+                withAnimation {
+                    showModal = false
+                }
+            }
         }
     }
 }

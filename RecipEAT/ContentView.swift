@@ -61,6 +61,10 @@ struct ContentView: View {
                 }.tag(4)
 
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("GoToHomeTab"))) {
+            _ in
+            selectedTab = 0
+        }
     }
 }
 
