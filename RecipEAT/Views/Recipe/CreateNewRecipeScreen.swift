@@ -86,9 +86,9 @@ struct CreateNewRecipeScreen: View {
                                 .frame(minHeight: 80)
                                 .scrollContentBackground(.hidden)
                                 .customTextField()
-                                .onChange(of: recipeDescription) {
-                                    if recipeDescription.count > 60 {
-                                        recipeDescription = String(recipeDescription.prefix(60))
+                                .onChange(of: recipeDescription) { oldValue, newValue in
+                                    if newValue.count > 60 {
+                                        recipeDescription = String(newValue.prefix(60))
                                     }
                                 }
                         }
@@ -124,6 +124,7 @@ struct CreateNewRecipeScreen: View {
                             }
                         }
                     }
+                    
                     // Serving stepper
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Serving")
@@ -167,7 +168,7 @@ struct CreateNewRecipeScreen: View {
                                     .background(Color.pink.opacity(0.1))
                                     .cornerRadius(8)
                                     .keyboardType(.numberPad)
-
+                                
                                 TextField("Ingredient", text: $ingredients[idx].name)
                                     .padding()
                                     .background(Color.pink.opacity(0.1))
@@ -223,10 +224,10 @@ struct CreateNewRecipeScreen: View {
                     // Publish button
                     Button(action: {
                         guard !recipeTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                                  !recipeDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                                alertMessage = "Please enter a title and description atleast before publishing your recipe."
-                                showAlert = true
-                                return
+                              !recipeDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                            alertMessage = "Please enter a title and description at least before publishing your recipe."
+                            showAlert = true
+                            return
                         }
                         recipeService.publishRecipe(
                             title: recipeTitle,
@@ -258,14 +259,6 @@ struct CreateNewRecipeScreen: View {
                 .padding()
             }
             .navigationTitle("Create Recipe")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                        Image(systemName: "chevron.backward")
-                            .foregroundColor(.pink)
-                    }
-                }
-            }
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(selectedImage: $recipeImage)
             }
@@ -275,7 +268,6 @@ struct CreateNewRecipeScreen: View {
                       dismissButton: .default(Text("OK"), action: {
                     // Reset the form fields
                     resetForm()
-                    // Switch the selected tab in the parent TabView to MealPlannerScreen (tag 3)
                     withAnimation {
                         selectedTab = 3
                     }

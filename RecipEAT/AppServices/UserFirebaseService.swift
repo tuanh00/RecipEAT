@@ -36,9 +36,11 @@ class UserFirebaseService: ObservableObject {
             var newUser = User(id: firebaseUser.uid,
                                email: email,
                                displayName: displayName,
-                               imageUrl: "defaultAvatar",  // temporary value; will be updated below
+                               imageUrl: "defaultAvatar",
                                password: hashedPassword,
-                               createdAt: Date())
+                               createdAt: Date(),
+                               savedRecipes:  [],
+                               likedRecipes: [])
             
             // Upload the default avatar from Assets to Storage.
             self.uploadDefaultAvatar(for: firebaseUser) { downloadURL in
@@ -112,7 +114,9 @@ class UserFirebaseService: ObservableObject {
                                    displayName: displayName,
                                    imageUrl: imageUrl,
                                    password: "",
-                                   createdAt: Date())
+                                   createdAt: Date(),
+                                   savedRecipes: [],
+                                   likedRecipes: [])
             
             if let snapshot = snapshot, snapshot.exists {
                 // Update the existing document.
@@ -145,6 +149,115 @@ class UserFirebaseService: ObservableObject {
                 } catch {
                     completion(false, error.localizedDescription)
                 }
+            }
+        }
+    }
+    
+    func toggleSaveRecipe(recipeId: String){
+        guard let userId = currentUser?.id else { return }
+        let userDoc = db.collection("users").document(userId)
+        
+        var updatedSaved = currentUser?.savedRecipes ?? []
+        if updatedSaved.contains(recipeId) {
+            updatedSaved.removeAll { $0 == recipeId }
+        } else {
+            updatedSaved.append(recipeId)
+        }
+        userDoc.updateData(["savedRecipes": updatedSaved]) {
+            error in
+            if let error = error {
+                print("Error updating savedRecipes: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    self.currentUser?.savedRecipes = updatedSaved
+                }
+            }
+        }
+    }
+    
+    func toggleLikeRecipe(recipeId: String) {
+        guard let userId = currentUser?.id else { return }
+        let userDoc = db.collection("users").document(userId)
+        
+        var updatedLiked = currentUser?.likedRecipes ?? []
+        if updatedLiked.contains(recipeId) {
+            updatedLiked.removeAll { $0 == recipeId }
+        } else {
+                updatedLiked.append(recipeId)
+            }
+        userDoc.updateData(["likedRecipes": updatedLiked]) {
+            error in
+            if let error = error {
+                print("Error updating linkedRecipes: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    self.currentUser?.likedRecipes = updatedLiked
+                }
+            }
+        }
+    }
+    
+    func logout() async throws {
+        GIDSignIn.sharedInstance.signOut()
+        try Auth.auth().signOut()
+        await MainActor.run {
+            self.currentUser = nil
+        }
+    }
+    
+    func updateProfile(displayName: String, newPassword: String?, completion: @escaping (Error?) -> Void) {
+            guard let user = self.currentUser, let userId = user.id else {
+                completion(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user"]))
+                return
+            }
+            var updates: [String: Any] = [:]
+            if displayName != user.displayName {
+                updates["displayName"] = displayName
+            }
+            if let newPassword = newPassword, !newPassword.isEmpty {
+                let hashedPassword = Data(newPassword.utf8).base64EncodedString()
+                updates["password"] = hashedPassword
+                // Update FirebaseAuth password as well.
+                Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
+                    if let error = error {
+                        print("Error updating Auth password: \(error.localizedDescription)")
+                    }
+                }
+            }
+            if updates.isEmpty {
+                completion(nil)
+                return
+            }
+            let userDoc = db.collection("users").document(userId)
+            userDoc.updateData(updates) { error in
+                if let error = error {
+                    completion(error)
+                } else {
+                    // Update local copy
+                    DispatchQueue.main.async {
+                        self.currentUser?.displayName = displayName
+                    }
+                    completion(nil)
+                }
+            }
+        }
+    
+    func loadCurrentUser(completion: ((Error?) -> Void)? = nil) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            completion?(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No authenticated user"]))
+            return
+        }
+        db.collection("users").document(uid).getDocument { snapshot, error in
+            if let error = error {
+                completion?(error)
+            } else if let snapshot = snapshot, snapshot.exists,
+                      let userData = try? snapshot.data(as: User.self) {
+                DispatchQueue.main.async {
+                    self.currentUser = userData
+                }
+                completion?(nil)
+            } else {
+                completion?(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "User data not found"]))
             }
         }
     }

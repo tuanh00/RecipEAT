@@ -69,7 +69,9 @@ class AuthenticationView: ObservableObject {
                                            displayName: displayName,
                                            imageUrl: imageUrl,
                                            password: "",  // No need to save password for Gmail sign‑in.
-                                           createdAt: Date())
+                                           createdAt: Date(),
+                                           savedRecipes: [],
+                                           likedRecipes: [])
                         do {
                             try Firestore.firestore().collection("users").document(firebaseUser.uid).setData(from: newUser) { err in
                                 if let err = err {
@@ -91,10 +93,10 @@ class AuthenticationView: ObservableObject {
         }
     }
     
-    func logout() async throws {
-        GIDSignIn.sharedInstance.signOut()
-        try Auth.auth().signOut()
-        userService?.currentUser = nil
-    }
+//    func logout() async throws {
+//        GIDSignIn.sharedInstance.signOut()
+//        try Auth.auth().signOut()
+//        userService?.currentUser = nil
+//    }
 }
 

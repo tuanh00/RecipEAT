@@ -8,31 +8,9 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var error: String = ""
     @State private var selectedTab: Int = 0
 
     var body: some View {
-        VStack {
-            Button{
-                Task {
-                    do {
-                        try await AuthenticationView().logout()
-                    } catch let e {
-                        error = e.localizedDescription
-                    }
-                }
-            } label: {
-                Text("Log Out")
-                    .customFont(.subheadline)
-                    .padding(8)
-            }
-            .buttonStyle(.borderedProminent)
-            
-            Text(error)
-                .foregroundColor(.red)
-                .font(.caption)
-        }.padding()
-        
         TabView(selection: $selectedTab) {
             HomeScreen()
                 .tabItem {
@@ -40,7 +18,7 @@ struct ContentView: View {
                 }
                 .tag(0)
 
-            SavedListScreen()
+            PersonalRecipeScreen(selectedTab: $selectedTab)
                 .tabItem {
                     Image(systemName: "book.pages.fill")
                 }.tag(1)

@@ -11,7 +11,7 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
 import Combine
-import UIKit  // for UIImage if needed
+import UIKit
 
 class RecipeService: ObservableObject {
     private let db = Firestore.firestore()
@@ -59,6 +59,7 @@ class RecipeService: ObservableObject {
         let recipe = Recipe(imageUrl: "", title: lowerTitle, description: lowerDesc, ingredients: ingredients, instructions: instructions, userId: currentUserId, category: category, ratings: [], review: [], servings: servings, createdAt: Date(), isPublished: isPublished)
         createRecipe(recipe: recipe, image: image, completion: completion)
     }
+    
     // 2) Upload recipe image to Firebase Storage
     private func uploadRecipeImage(image: UIImage, completion: @escaping (Result<String, Error>) -> Void) {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else {
@@ -114,7 +115,7 @@ class RecipeService: ObservableObject {
         }
     }
     
-    //Searches recipes whose title OR description starts with a given prefix
+    // 5) Searches recipes whose title OR description starts with a given prefix
     func searchRecipes(prefix: String, completion: @escaping ([Recipe], Error?) -> Void) {
         let lowerPrefix = prefix.lowercased()
         let collection = db.collection("recipes")
@@ -167,6 +168,52 @@ class RecipeService: ObservableObject {
                 completion(Array(uniqueResults), nil)
             }
         }
+    }
+    
+    // 6) Display recipes
+    func fetchAllRecipes(completion: @escaping ([Recipe]) -> Void) {
+        db.collection("recipes").getDocuments {
+            snapshot, error in
+            if let error = error {
+                print("Error fetching recipes: \(error.localizedDescription)")
+                completion([])
+                return
+            }
+            let recipes = snapshot?.documents.compactMap {
+                try? $0.data(as: Recipe.self)
+            } ?? []
+            completion(recipes)
+        }
+    }
+    // 7) Fetch only published recipes
+    func fetchPublishedRecipes(completion: @escaping ([Recipe]) -> Void) {
+        db.collection("recipes")
+            .whereField("isPublished", isEqualTo: true)
+            .order(by: "createdAt", descending: true)
+            .getDocuments {
+                snapshot, error in
+                if let error = error {
+                    print("Error fetching published recipes: \(error.localizedDescription)")
+                    completion([])
+                    return
+                }
+                
+                let recipes = snapshot?.documents.compactMap {
+                    document -> Recipe? in
+                    try? document.data(as: Recipe.self)
+                } ?? []
+                
+                DispatchQueue.main.async {
+                    completion(recipes)
+                }
+            }
+    }
+    func filterRecipesBySavedList(allRecipes: [Recipe], savedIds: [String]) -> [Recipe] {
+        allRecipes.filter { savedIds.contains($0.id ?? "") }
+    }
+    
+    func filterRecipesByLikedList(allRecipes: [Recipe], likedIds: [String]) -> [Recipe] {
+        allRecipes.filter { likedIds.contains($0.id ?? "") }
     }
 }
 

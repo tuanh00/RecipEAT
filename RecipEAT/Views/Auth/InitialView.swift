@@ -9,14 +9,13 @@ import SwiftUI
 import FirebaseAuth
 
 struct InitialView: View {
-    //environment objects
+    // Environment objects
     @StateObject private var userService = UserFirebaseService()
     @StateObject private var recipeService = RecipeService()
     @StateObject private var mealPlanService = MealPlanService()
     
     @State private var userLoggedIn = (Auth.auth().currentUser != nil)
     @State private var showSignIn = true
-    // controls presentation of SignInView
     var body: some View {
         ContentView()
             .fullScreenCover(isPresented: $showSignIn) {
@@ -25,21 +24,31 @@ struct InitialView: View {
             }
             .onAppear {
                 _ = Auth.auth().addStateDidChangeListener { auth, user in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
-                        if showSignIn {
-                            print("User is on Sign-In screen, keeping it open.")
-                        } else {
+                    // FIX: Removed delay and load user data if authenticated.
+                    DispatchQueue.main.async {
+                        if let _ = user {
                             print("Navigating to Home Screen.")
-                            userLoggedIn = (user != nil)
-                            showSignIn = (user == nil)
+                            userLoggedIn = true
+                            showSignIn = false
+                            // Load current user's Firestore data if not already loaded.
+                            if self.userService.currentUser == nil {
+                                self.userService.loadCurrentUser { error in
+                                    if let error = error {
+                                        print("Error loading current user: \(error.localizedDescription)")
+                                    }
+                                }
+                            }
+                        } else {
+                            print("User is on Sign-In screen, keeping it open.")
+                            userLoggedIn = false
+                            showSignIn = true
                         }
                     }
                 }
             }
-            .environmentObject(userService)//environment object for SignupView
-            .environmentObject(recipeService)   // Inject RecipeService here
+            .environmentObject(userService)
+            .environmentObject(recipeService)
             .environmentObject(mealPlanService)
-
     }
 }
 

@@ -15,4 +15,6 @@ struct User: Identifiable, Codable {
     var imageUrl: String
     var password: String
     var createdAt: Date
+    var savedRecipes: [String]
+    var likedRecipes: [String]
 }

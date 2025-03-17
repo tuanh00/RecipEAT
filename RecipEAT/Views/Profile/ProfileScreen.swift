@@ -75,12 +75,22 @@ struct ProfileScreen: View {
                         .padding(.top, 8)
                 }
                 
-                // Save button
+                // Save button calls the service's updateProfile.
                 Button("Save") {
-                    updateProfile()
+                    isSaving = true
+                    userService.updateProfile(displayName: newDisplayName, newPassword: newPassword) { error in
+                        isSaving = false
+                        if let error = error {
+                            saveError = error.localizedDescription
+                        } else {
+                            // Optionally dismiss or give feedback.
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    }
                 }
                 .padding()
                 .foregroundColor(.white)
+                .background(Color.blue)
                 .cornerRadius(10)
                 
                 if !saveError.isEmpty {
@@ -89,49 +99,34 @@ struct ProfileScreen: View {
                 }
                 
                 Spacer()
+                
+                // Log Out
+                Button(action: {
+                    Task {
+                        do {
+                            try await userService.logout()
+                        } catch {
+                            print("Error during logout: \(error.localizedDescription)")
+                        }
+                    }
+                }) {
+                    Text("Log Out")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 1)
+                        )
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 20)
             } else {
                 Text("No user data available.")
             }
         }
         .navigationBarTitle("Profile", displayMode: .inline)
-    }
-    
-    func updateProfile() {
-        guard let user = userService.currentUser else { return }
-        isSaving = true
-        var updates: [String: Any] = [:]
-        
-        if newDisplayName != user.displayName {
-            updates["displayName"] = newDisplayName
-        }
-        if !newPassword.isEmpty {
-            let hashedPassword = Data(newPassword.utf8).base64EncodedString()
-            updates["password"] = hashedPassword
-            // Update FirebaseAuth password as well
-            Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
-                if let error = error {
-                    print("Error updating Auth password: \(error.localizedDescription)")
-                }
-            }
-        }
-        
-        if updates.isEmpty {
-            isSaving = false
-            presentationMode.wrappedValue.dismiss()
-            return
-        }
-        
-        let userDoc = Firestore.firestore().collection("users").document(user.id ?? "")
-        userDoc.updateData(updates) { error in
-            isSaving = false
-            if let error = error {
-                saveError = error.localizedDescription
-            } else {
-                // Update local copy
-                userService.currentUser?.displayName = newDisplayName
-                presentationMode.wrappedValue.dismiss()
-            }
-        }
     }
 }
 
