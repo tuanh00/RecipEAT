@@ -29,6 +29,8 @@ struct RecipeDetails: View {
                 Text(recipe.title.capitalized)
                     .font(.largeTitle)
                     .fontWeight(.bold)
+                
+                Text("\(recipe.description)")
 
                 // Servings
                 HStack {

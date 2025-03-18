@@ -205,7 +205,7 @@ class UserFirebaseService: ObservableObject {
         }
     }
     
-    func updateProfile(displayName: String, newPassword: String?, completion: @escaping (Error?) -> Void) {
+    func updateProfile(displayName: String?, newPassword: String?, completion: @escaping (Error?) -> Void) {
             guard let user = self.currentUser, let userId = user.id else {
                 completion(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user"]))
                 return
@@ -235,7 +235,7 @@ class UserFirebaseService: ObservableObject {
                 } else {
                     // Update local copy
                     DispatchQueue.main.async {
-                        self.currentUser?.displayName = displayName
+                        self.currentUser?.displayName = displayName!
                     }
                     completion(nil)
                 }
