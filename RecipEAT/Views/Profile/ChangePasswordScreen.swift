@@ -56,7 +56,11 @@ struct ChangePasswordScreen: View {
                 }
                 
                 isSaving = true
-                userService.updateProfile(displayName: newDisplayName, newPassword: newPassword) { error in
+                userService
+                    .updateProfile(
+                        displayName: userService.currentUser?.displayName,
+                        newPassword: newPassword
+                    ) { error in
                     isSaving = false
                     if let error = error {
                         saveError = error.localizedDescription
@@ -83,7 +87,7 @@ struct ChangePasswordScreen: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50, height: 50)
-                    .foregroundColor(.black)
+                    .foregroundColor(.gray)
                     .opacity(0.7)
             }
             .padding(.bottom, 20)
