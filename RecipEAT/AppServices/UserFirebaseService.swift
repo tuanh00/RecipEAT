@@ -156,18 +156,22 @@ class UserFirebaseService: ObservableObject {
     func toggleSaveRecipe(recipeId: String){
         guard let userId = currentUser?.id else { return }
         let userDoc = db.collection("users").document(userId)
+        let recipeDoc = db.collection("recipes").document(recipeId)
         
         var updatedSaved = currentUser?.savedRecipes ?? []
-        if updatedSaved.contains(recipeId) {
+        let isSaved = updatedSaved.contains(recipeId)
+        
+        if isSaved {
             updatedSaved.removeAll { $0 == recipeId }
+            recipeDoc.updateData(["saveCount": FieldValue.increment(Int64(-1))])
         } else {
             updatedSaved.append(recipeId)
+            recipeDoc.updateData(["saveCount": FieldValue.increment(Int64(1))])
         }
+        
         userDoc.updateData(["savedRecipes": updatedSaved]) {
             error in
-            if let error = error {
-                print("Error updating savedRecipes: \(error.localizedDescription)")
-            } else {
+            if error == nil {
                 DispatchQueue.main.async {
                     self.currentUser?.savedRecipes = updatedSaved
                 }
@@ -178,18 +182,21 @@ class UserFirebaseService: ObservableObject {
     func toggleLikeRecipe(recipeId: String) {
         guard let userId = currentUser?.id else { return }
         let userDoc = db.collection("users").document(userId)
+        let recipeDoc = db.collection("recipes").document(recipeId)
         
         var updatedLiked = currentUser?.likedRecipes ?? []
-        if updatedLiked.contains(recipeId) {
+        let isLiked = updatedLiked.contains(recipeId)
+        
+        if isLiked {
             updatedLiked.removeAll { $0 == recipeId }
+            recipeDoc.updateData(["likeCount": FieldValue.increment(Int64(-1))])
         } else {
-                updatedLiked.append(recipeId)
-            }
+            updatedLiked.append(recipeId)
+            recipeDoc.updateData(["likeCount": FieldValue.increment(Int64(1))])
+        }
         userDoc.updateData(["likedRecipes": updatedLiked]) {
-            error in
-            if let error = error {
-                print("Error updating linkedRecipes: \(error.localizedDescription)")
-            } else {
+           error in
+            if error == nil {
                 DispatchQueue.main.async {
                     self.currentUser?.likedRecipes = updatedLiked
                 }
@@ -249,6 +256,10 @@ class UserFirebaseService: ObservableObject {
         }
         db.collection("users").document(uid).getDocument { snapshot, error in
             if let error = error {
+                DispatchQueue.main.async {
+                        self.currentUser = nil
+                        try? Auth.auth().signOut()
+                    }
                 completion?(error)
             } else if let snapshot = snapshot, snapshot.exists,
                       let userData = try? snapshot.data(as: User.self) {

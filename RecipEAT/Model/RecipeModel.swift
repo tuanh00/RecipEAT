@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct Recipe: Identifiable, Codable {
+struct Recipe: Identifiable, Codable, Hashable {
     @DocumentID var id: String?
     var imageUrl: String
     var title: String
@@ -17,14 +17,15 @@ struct Recipe: Identifiable, Codable {
     var instructions: [String]
     var userId: String
     var category: String
-    var ratings: [String]
     var review: [String]
     var servings: Int
     var createdAt: Date
     var isPublished: Bool
+    var likeCount: Int
+    var saveCount: Int
 }
 
-struct Ingredients: Codable {
+struct Ingredients: Codable, Hashable {
     var name: String
     var quantity: String
     var unit: String

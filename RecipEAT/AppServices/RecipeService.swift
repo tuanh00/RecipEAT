@@ -56,7 +56,7 @@ class RecipeService: ObservableObject {
             return
         }
         
-        let recipe = Recipe(imageUrl: "", title: lowerTitle, description: lowerDesc, ingredients: ingredients, instructions: instructions, userId: currentUserId, category: category, ratings: [], review: [], servings: servings, createdAt: Date(), isPublished: isPublished)
+        let recipe = Recipe(imageUrl: "", title: lowerTitle, description: lowerDesc, ingredients: ingredients, instructions: instructions, userId: currentUserId, category: category, review: [], servings: servings, createdAt: Date(), isPublished: isPublished, likeCount: 0, saveCount: 0)
         createRecipe(recipe: recipe, image: image, completion: completion)
     }
     
@@ -214,6 +214,22 @@ class RecipeService: ObservableObject {
     
     func filterRecipesByLikedList(allRecipes: [Recipe], likedIds: [String]) -> [Recipe] {
         allRecipes.filter { likedIds.contains($0.id ?? "") }
+    }
+    func fetchRecipeById(_ recipeId: String, completion: @escaping (Recipe?) -> Void) {
+        db.collection("recipes").document(recipeId).getDocument {
+            snapshot, error in
+            if let error = error {
+                print("Error fetching recipe \(recipeId): \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            if let snapshot = snapshot, snapshot.exists,
+               let recipe = try? snapshot.data(as: Recipe.self) {
+                completion(recipe)
+            } else {
+                completion(nil)
+            }
+        }
     }
 }
 

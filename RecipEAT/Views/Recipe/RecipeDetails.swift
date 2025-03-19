@@ -9,12 +9,14 @@ import SwiftUI
 
 struct RecipeDetails: View {
     let recipe: Recipe
+    @EnvironmentObject var recipeService: RecipeService
+    @State private var latestRecipe: Recipe?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 // Image
-                AsyncImage(url: URL(string: recipe.imageUrl)) { image in
+                AsyncImage(url: URL(string: latestRecipe?.imageUrl ?? recipe.imageUrl)) { image in
                     image
                         .resizable()
                         .scaledToFill()
@@ -26,18 +28,34 @@ struct RecipeDetails: View {
                 .cornerRadius(12)
 
                 // Title
-                Text(recipe.title.capitalized)
+                Text((latestRecipe?.title ?? recipe.title).capitalized)
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                
-                Text("\(recipe.description)")
 
-                // Servings
-                HStack {
-                    Image(systemName: "person.2.fill")
-                    Text("\(recipe.servings) servings")
+                // Description
+                Text((latestRecipe?.description ?? recipe.description).capitalized)
+                    .font(.body)
+
+                // Servings, Likes, Saves
+                HStack(spacing: 16) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "person.2.fill")
+                        Text("\(latestRecipe?.servings ?? recipe.servings) servings")
+                    }
+                    .foregroundColor(.green)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "heart.fill")
+                        Text("\(latestRecipe?.likeCount ?? recipe.likeCount)")
+                    }
+                    .foregroundColor(.red)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "bookmark.fill")
+                        Text("\(latestRecipe?.saveCount ?? recipe.saveCount)")
+                    }
+                    .foregroundColor(.yellow)
                 }
-                .foregroundColor(.gray)
                 .font(.subheadline)
 
                 Divider()
@@ -47,7 +65,7 @@ struct RecipeDetails: View {
                     .font(.title2)
                     .fontWeight(.semibold)
 
-                ForEach(recipe.ingredients, id: \.name) { ingredient in
+                ForEach((latestRecipe?.ingredients ?? recipe.ingredients), id: \.name) { ingredient in
                     HStack {
                         Image(systemName: "circle.fill")
                             .font(.system(size: 6))
@@ -63,10 +81,9 @@ struct RecipeDetails: View {
                     .font(.title2)
                     .fontWeight(.semibold)
 
-                ForEach(Array(recipe.instructions.enumerated()), id: \.offset) { index, step in
+                ForEach(Array((latestRecipe?.instructions ?? recipe.instructions).enumerated()), id: \.offset) { index, step in
                     HStack(alignment: .top) {
-                        Text("\(index + 1).")
-                            .bold()
+                        Text("\(index + 1).").bold()
                         Text(step)
                     }
                     .padding(.vertical, 4)
@@ -76,6 +93,18 @@ struct RecipeDetails: View {
         }
         .navigationTitle("Recipe Details")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            // Live fresh UI
+            if let recipeId = recipe.id {
+                recipeService.fetchRecipeById(recipeId) { updated in
+                    if let updated = updated {
+                        DispatchQueue.main.async {
+                            latestRecipe = updated
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -94,11 +123,12 @@ struct RecipeDetails: View {
             instructions: ["Boil pasta", "Prepare sauce", "Mix and serve"],
             userId: "ClCmQWjsj4ZuGqLnzDyxM8EbFj83",
             category: "Dinner",
-            ratings: ["123"],
             review: ["Ok"],
             servings: 2,
             createdAt: Date.now,
-            isPublished: true
+            isPublished: true,
+            likeCount: 10,
+            saveCount: 5
         )
     )
 }

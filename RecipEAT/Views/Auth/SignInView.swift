@@ -45,7 +45,7 @@ struct SignInView: View {
                     }
                 }
                 DispatchQueue.main.async {
-                    if let userData = self.userService.currentUser {
+                    if let _ = self.userService.currentUser {
                         print("User data loaded, closing SignInView.")
                         withAnimation {
                             NotificationCenter.default.post(name: Notification.Name("GoToHomeTab"), object: nil)

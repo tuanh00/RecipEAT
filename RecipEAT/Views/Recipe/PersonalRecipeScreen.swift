@@ -32,7 +32,7 @@ struct PersonalRecipeScreen: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // Toggle Tabs UI
                 HStack(spacing: 12) {
@@ -62,9 +62,14 @@ struct PersonalRecipeScreen: View {
 
                 // Render Recipes
                 if filteredRecipes.isEmpty {
-                    Text(selectedList == .saved ? "No saved recipes yet." : "No liked recipes yet.")
-                        .foregroundColor(.gray)
-                        .padding()
+                    VStack {
+                        Spacer(minLength: 0)
+                        Text(selectedList == .saved ? "Let's save some recipes 🎉" : "No liked recipes yet 🙁")
+                            .foregroundColor(.gray)
+                            .padding()
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 } else {
                     RecipeScreen(recipes: filteredRecipes)
                 }
@@ -91,11 +96,12 @@ let sampleRecipesForPreview: [Recipe] = {
             instructions: ["Prepare layers", "Chill in fridge"],
             userId: "user123",
             category: "Dessert",
-            ratings: [],
             review: [],
             servings: 4,
             createdAt: Date(),
-            isPublished: true
+            isPublished: true,
+            likeCount: 10,
+            saveCount: 5
         ),
         Recipe(
             imageUrl: "https://images.unsplash.com/photo-1626844131082-256783844137?w=1400",
@@ -105,11 +111,12 @@ let sampleRecipesForPreview: [Recipe] = {
             instructions: ["Boil pasta", "Make sauce"],
             userId: "user123",
             category: "Dinner",
-            ratings: [],
             review: [],
             servings: 2,
             createdAt: Date(),
-            isPublished: true
+            isPublished: true,
+            likeCount: 10,
+            saveCount: 5
         )
     ]
     recipes[0].id = "tiramisuID"

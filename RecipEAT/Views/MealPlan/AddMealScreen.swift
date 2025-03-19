@@ -104,7 +104,7 @@ struct AddMealScreen: View {
     }
     
     func saveMeal() {
-        let finalName = recipeName.isEmpty ? query : recipeName
+        //let finalName = recipeName.isEmpty ? query : recipeName
 
         let meal = Meal(
             recipeName: recipeName,
