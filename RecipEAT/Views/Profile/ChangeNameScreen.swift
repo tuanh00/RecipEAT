@@ -1,16 +1,15 @@
 //
-//  ChangePasswordScreen.swift
+//  ChangeNameScreen.swift
 //  RecipEAT
 //
-//  Created by user269332 on 3/17/25.
+//  Created by LaSalle on 2025-03-20.
 //
 
 import SwiftUI
 
-struct ChangePasswordScreen: View {
+struct ChangeNameScreen: View {
     @EnvironmentObject var userService: UserFirebaseService
-    @State private var newPassword: String = ""
-    @State private var confirmPassword: String = ""
+    @State private var newName: String = ""
     @State private var saveError: String = ""
     @State private var isSaving = false
     @State private var successMessage: String?
@@ -19,26 +18,15 @@ struct ChangePasswordScreen: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                Text("Change Password")
+                Text("Change Display Name")
                     .font(.largeTitle)
                     .bold()
                     .padding(.top, 40)
                 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("New Password")
+                    Text("New Name")
                         .font(.headline)
-                    SecureField("Enter new password", text: $newPassword)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .disableAutocorrection(true) //turn-off auto-suggestion
-                        .autocapitalization(.none)
-                        .frame(height: 50)
-                }
-                .padding(.horizontal)
-                
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Confirm Password")
-                        .font(.headline)
-                    SecureField("Re-enter new password", text: $confirmPassword)
+                    TextField("Enter new display name", text: $newName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .disableAutocorrection(true)
                         .autocapitalization(.none)
@@ -46,14 +34,12 @@ struct ChangePasswordScreen: View {
                 }
                 .padding(.horizontal)
                 
-                // Show error message if any
                 if !saveError.isEmpty {
                     Text(saveError)
                         .foregroundColor(.red)
                         .padding(.horizontal)
                 }
                 
-                // Show success message if any
                 if let successMessage = successMessage {
                     Text(successMessage)
                         .foregroundColor(.green)
@@ -64,27 +50,18 @@ struct ChangePasswordScreen: View {
                     //clear error msg before processing
                     saveError = ""
                     
-                    guard !newPassword.isEmpty else {
-                        saveError = "New password cannot be empty."
+                    guard !newName.isEmpty else {
+                        saveError = "Display name cannot be empty."
                         return
                     }
-                    
-                    guard newPassword == confirmPassword else {
-                        saveError = "Passwords do not match."
-                        return
-                    }
-                    
                     isSaving = true
-                    userService.updateProfile(
-                        displayName: userService.currentUser?.displayName,
-                        newPassword: newPassword
-                    ) { error in
+                    userService.updateProfile(displayName: newName, newPassword: nil) { error in
                         isSaving = false
                         if let error = error {
                             saveError = error.localizedDescription
                         } else {
                             saveError = ""
-                            successMessage = "Password updated successfully!"
+                            successMessage = "Display name updated successfully!"
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                 presentationMode.wrappedValue.dismiss()
                             }
@@ -100,7 +77,7 @@ struct ChangePasswordScreen: View {
                 Spacer()
             }
             .padding()
-            .navigationBarTitle("Change Password", displayMode: .inline)
+            .navigationBarTitle("Change Name", displayMode: .inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -116,8 +93,8 @@ struct ChangePasswordScreen: View {
     }
 }
 
-struct ChangePasswordScreen_Previews: PreviewProvider {
+struct ChangeNameScreen_Previews: PreviewProvider {
     static var previews: some View {
-        ChangePasswordScreen().environmentObject(UserFirebaseService())
+        ChangeNameScreen().environmentObject(UserFirebaseService())
     }
 }

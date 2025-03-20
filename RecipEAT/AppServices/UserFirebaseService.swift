@@ -272,4 +272,56 @@ class UserFirebaseService: ObservableObject {
             }
         }
     }
+    
+    /// New function: Update user's avatar image.
+    func updateAvatar(image: UIImage, completion: @escaping (Bool, String?) -> Void) {
+        guard let user = self.currentUser else {
+            completion(false, "No current user")
+            return
+        }
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            completion(false, "Invalid image")
+            return
+        }
+        // Safely unwrap user.id into userId
+        guard let userId = user.id else {
+            completion(false, "User ID is missing.")
+            return
+        }
+        let storageRef = storage.reference().child("userAvatars/\(userId).jpg")
+        storageRef.putData(imageData, metadata: nil) { metadata, error in
+            if let error = error {
+                print("Error uploading avatar: \(error.localizedDescription)")
+                completion(false, error.localizedDescription)
+                return
+            }
+            storageRef.downloadURL { url, error in
+                if let error = error {
+                    print("Error fetching download URL: \(error.localizedDescription)")
+                    completion(false, error.localizedDescription)
+                    return
+                }
+                guard let downloadURL = url?.absoluteString else {
+                    completion(false, "Download URL not found")
+                    return
+                }
+                // Update Firestore user document with new avatar URL.
+                self.db.collection("users").document(userId).updateData([
+                    "imageUrl": downloadURL
+                ]) { error in
+                    if let error = error {
+                        print("Error updating user document: \(error.localizedDescription)")
+                        completion(false, error.localizedDescription)
+                    } else {
+                        DispatchQueue.main.async {
+                            self.currentUser?.imageUrl = downloadURL
+                        }
+                        completion(true, nil)
+                    }
+                }
+            }
+        }
+    }
+
+
 }
