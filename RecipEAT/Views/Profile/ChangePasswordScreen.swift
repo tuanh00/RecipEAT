@@ -14,6 +14,7 @@ struct ChangePasswordScreen: View {
     @State private var saveError: String = ""
     @State private var isSaving = false
     @State private var successMessage: String?
+    @FocusState private var isPasswordFieldFocused: Bool //focus state for password
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
@@ -43,6 +44,7 @@ struct ChangePasswordScreen: View {
                         .disableAutocorrection(true)
                         .autocapitalization(.none)
                         .frame(height: 50)
+                        .focused($isPasswordFieldFocused)
                 }
                 .padding(.horizontal)
                 
@@ -71,6 +73,8 @@ struct ChangePasswordScreen: View {
                     
                     guard newPassword == confirmPassword else {
                         saveError = "Passwords do not match."
+                        confirmPassword = "" //clear field
+                        isPasswordFieldFocused = true //refocus on confirm password field
                         return
                     }
                     

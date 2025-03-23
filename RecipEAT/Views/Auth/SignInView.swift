@@ -18,6 +18,7 @@ struct SignInView: View {
     @Binding var showModal: Bool
     @StateObject var authVM = AuthenticationView()  // for Google sign‑in
     @State private var showSignup = false  // Controls SignupView presentation
+    @FocusState private var isPasswordFieldFocused: Bool  // Focus state for password field
     @EnvironmentObject var userService: UserFirebaseService
     
     let check = RiveViewModel(fileName: "check", stateMachineName: "State Machine 1")
@@ -29,6 +30,8 @@ struct SignInView: View {
             if let error = error {
                 DispatchQueue.main.async {
                     loginError = error.localizedDescription
+                    password = "" //Clear password field
+                    isPasswordFieldFocused = true //refocus on password field
                     isLoading = false
                 }
                 return

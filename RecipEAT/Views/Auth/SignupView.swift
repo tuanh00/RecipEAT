@@ -57,7 +57,8 @@ struct SignupView: View {
         }
         if password != confirmPassword {
             signupError = "Passwords do not match."
-            focusedField = .confirmPassword
+            confirmPassword = "" //Clear field
+            focusedField = .confirmPassword 
             return
         }
         

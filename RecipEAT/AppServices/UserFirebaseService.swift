@@ -222,6 +222,11 @@ class UserFirebaseService: ObservableObject {
                 updates["displayName"] = displayName
             }
             if let newPassword = newPassword, !newPassword.isEmpty {
+                guard newPassword.count >= 6 else {
+                    completion(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Password must be at least 6 characters long"]))
+                    return
+                }
+                
                 let hashedPassword = Data(newPassword.utf8).base64EncodedString()
                 updates["password"] = hashedPassword
                 // Update FirebaseAuth password as well.
