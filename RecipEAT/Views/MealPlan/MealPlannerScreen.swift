@@ -22,88 +22,86 @@ struct MealPlannerScreen: View {
     @State private var selectedDate = Date()
     
     var body: some View {
-        NavigationStack {
-            VStack {
-                HStack {
-                    Button("Previous") {
-                        withAnimation {
-                            currentWeekStart = Calendar.current.date(byAdding: .day, value: -7, to: currentWeekStart)!
-                            loadMealPlan()
-                        }
-                    }
-                    Spacer()
-                    Text(weekLabel)
-                        .customFont(.headline)
-                    Spacer()
-                    Button("Next") {
-                        withAnimation {
-                            currentWeekStart = Calendar.current.date(byAdding: .day, value: 7, to: currentWeekStart)!
-                            loadMealPlan()
-                        }
+        VStack {
+            HStack {
+                Button("Previous") {
+                    withAnimation {
+                        currentWeekStart = Calendar.current.date(byAdding: .day, value: -7, to: currentWeekStart)!
+                        loadMealPlan()
                     }
                 }
-                .padding()
-                
-                if let plan = mealPlan {
-                    List {
-                        ForEach(0..<7, id: \.self) { offset in
-                            let day = Calendar.current.date(byAdding: .day, value: offset, to: plan.startDate)!
-                            Section(header: Text(formattedDate(day))) {
-                                let dayMeals = plan.meals.filter { isSameDay($0.date, day) }
-                                                          .sorted { $0.date < $1.date }
-                                if dayMeals.isEmpty {
-                                    Button("+ Add meal") {
-                                        selectedDate = day
-                                        showAddMeal = true
+                Spacer()
+                Text(weekLabel)
+                    .customFont(.headline)
+                Spacer()
+                Button("Next") {
+                    withAnimation {
+                        currentWeekStart = Calendar.current.date(byAdding: .day, value: 7, to: currentWeekStart)!
+                        loadMealPlan()
+                    }
+                }
+            }
+            .padding()
+            
+            if let plan = mealPlan {
+                List {
+                    ForEach(0..<7, id: \.self) { offset in
+                        let day = Calendar.current.date(byAdding: .day, value: offset, to: plan.startDate)!
+                        Section(header: Text(formattedDate(day))) {
+                            let dayMeals = plan.meals.filter { isSameDay($0.date, day) }
+                                .sorted { $0.date < $1.date }
+                            if dayMeals.isEmpty {
+                                Button("+ Add meal") {
+                                    selectedDate = day
+                                    showAddMeal = true
+                                }
+                            } else {
+                                ForEach(dayMeals, id: \.id) { meal in
+                                    HStack {
+                                        Image(iconName(for: meal.category))
+                                            .resizable()
+                                            .frame(width: 20, height: 20)
+                                            .padding(.trailing, 8)
+                                        
+                                        Text(meal.recipeName)
+                                            .customFont(.headline)
+                                        
+                                        Spacer()
+                                        
+                                        Text(meal.notes)
+                                            .foregroundColor(.secondary)
                                     }
-                                } else {
-                                    ForEach(dayMeals, id: \.id) { meal in
-                                        HStack {
-                                            Image(iconName(for: meal.category))
-                                                .resizable()
-                                                .frame(width: 20, height: 20)
-                                                .padding(.trailing, 8)
-                                            
-                                            Text(meal.recipeName)
-                                                .customFont(.headline)
-                                            
-                                            Spacer()
-                                            
-                                            Text(meal.notes)
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
-                                    Button("+ Add meal") {
-                                        selectedDate = day
-                                        showAddMeal = true
-                                    }
+                                }
+                                Button("+ Add meal") {
+                                    selectedDate = day
+                                    showAddMeal = true
                                 }
                             }
                         }
                     }
-                    .listStyle(.insetGrouped)
+                }
+                .listStyle(.insetGrouped)
+            } else {
+                if !errorMessage.isEmpty {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
                 } else {
-                    if !errorMessage.isEmpty {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
-                    } else {
-                        Text("Loading Meal Plan...")
-                    }
+                    Text("Loading Meal Plan...")
                 }
             }
-            .navigationTitle("Meal Planner")
-            .onAppear {
-                loadMealPlan()
-            }
-            .sheet(isPresented: $showAddMeal, onDismiss: {
-                loadMealPlan()  // Refresh the plan after dismissing AddMealScreen
-            }) {
-                AddMealScreen(planId: mealPlan?.id ?? "", defaultDate: selectedDate, onSave: {
-                    loadMealPlan()
-                })
-            }
-            .presentationDetents([.medium])
         }
+        .navigationTitle("Meal Planner")
+        .onAppear {
+            loadMealPlan()
+        }
+        .sheet(isPresented: $showAddMeal, onDismiss: {
+            loadMealPlan()  // Refresh the plan after dismissing AddMealScreen
+        }) {
+            AddMealScreen(planId: mealPlan?.id ?? "", defaultDate: selectedDate, onSave: {
+                loadMealPlan()
+            })
+        }
+        .presentationDetents([.medium])
     }
     
     func loadMealPlan() {

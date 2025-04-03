@@ -15,101 +15,86 @@ struct RecipeCard: View {
     @State private var latestRecipe: Recipe?
     
     var body: some View {
-        NavigationLink(value: recipe) {
-            ZStack(alignment: .bottomTrailing) {
-                VStack(spacing: 0) {
-                    // IMAGE
-                    AsyncImage(url: URL(string: recipe.imageUrl)) { image in
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .frame(height: 200)
-                            .clipped()
-                    } placeholder: {
-                        Color.gray.opacity(0.2)
-                            .frame(height: 200)
-                            .clipped()
-                    }
-                    .cornerRadius(20, corners: [.topLeft, .topRight])
-                    
-                    // TEXT INFO
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(recipe.title.capitalized)
-                            .font(.headline)
-                            .foregroundColor(.black)
-                            .lineLimit(2)
-                        
-                        HStack(spacing: 16) {
-                            // live like count
-                            HStack(spacing: 4) {
-                                Image(systemName: "heart.fill")
-                                Text("\(latestRecipe?.likeCount ?? recipe.likeCount)")
-                            }
-                            .foregroundColor(.red)
-                            
-                            HStack(spacing: 4) {
-                                Image(systemName: "person.2.fill")
-                                Text("\(recipe.servings) servings")
-                            }
-                            .foregroundColor(.gray)
-                        }
-                        .font(.subheadline)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.white)
-                    .cornerRadius(20, corners: [.bottomLeft, .bottomRight])
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 0) {
+                // IMAGE
+                AsyncImage(url: URL(string: recipe.imageUrl)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Color.gray.opacity(0.2)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(radius: 5)
-                .padding(.horizontal)
-                
-                // 3) Toggles Overlay
-                VStack(spacing: 12) {
-                    // SAVE BUTTON
-                    Button {
-                        userService.toggleSaveRecipe(recipeId: recipe.id ?? "")
-                        refreshRecipeData() //trigger live UI refresh
-                    } label: {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 44, height: 44)
-                            .shadow(radius: 2)
-                            .overlay(
-                                Image(systemName: userService.currentUser?.savedRecipes.contains(recipe.id ?? "") == true
-                                      ? "bookmark.fill" : "bookmark")
-                                .foregroundColor(
-                                    userService.currentUser?.savedRecipes.contains(recipe.id ?? "") == true
-                                    ? .yellow : .gray
-                                )
-                            )
-                    }
-                    
-                    // LIKE BUTTON
-                    Button {
-                        userService.toggleLikeRecipe(recipeId: recipe.id ?? "")
-                        refreshRecipeData()
+                .frame(height: 200)
+                .clipped()
 
-                    } label: {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 44, height: 44)
-                            .shadow(radius: 2)
-                            .overlay(
-                                Image(systemName: userService.currentUser?.likedRecipes.contains(recipe.id ?? "") == true
-                                      ? "heart.fill" : "heart")
-                                .foregroundColor(
-                                    userService.currentUser?.likedRecipes.contains(recipe.id ?? "") == true
-                                    ? .red : .gray
-                                )
-                            )
+                // TEXT INFO
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(recipe.title.capitalized)
+                        .font(.headline)
+                        .foregroundColor(.black)
+                        .lineLimit(2)
+
+                    HStack(spacing: 16) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "heart.fill")
+                            Text("\(latestRecipe?.likeCount ?? recipe.likeCount)")
+                        }
+                        .foregroundColor(.red)
+
+                        HStack(spacing: 4) {
+                            Image(systemName: "person.2.fill")
+                            Text("\(recipe.servings) servings")
+                        }
+                        .foregroundColor(.gray)
                     }
+                    .font(.subheadline)
                 }
-                .padding(.trailing, 26)
-                .padding(.bottom, 12)
-                .zIndex(1)
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white)
             }
+            .background(Color.white)
+            .cornerRadius(20)
+            .shadow(radius: 5)
+            .padding(.horizontal)
+
+            // LIKE/SAVE overlay
+            VStack(spacing: 12) {
+                Button {
+                    userService.toggleSaveRecipe(recipeId: recipe.id ?? "")
+                    refreshRecipeData()
+                } label: {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 44, height: 44)
+                        .shadow(radius: 2)
+                        .overlay(
+                            Image(systemName: userService.currentUser?.savedRecipes.contains(recipe.id ?? "") == true ? "bookmark.fill" : "bookmark")
+                                .foregroundColor(userService.currentUser?.savedRecipes.contains(recipe.id ?? "") == true ? .yellow : .gray)
+                        )
+                }
+
+                Button {
+                    userService.toggleLikeRecipe(recipeId: recipe.id ?? "")
+                    refreshRecipeData()
+                } label: {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 44, height: 44)
+                        .shadow(radius: 2)
+                        .overlay(
+                            Image(systemName: userService.currentUser?.likedRecipes.contains(recipe.id ?? "") == true ? "heart.fill" : "heart")
+                                .foregroundColor(userService.currentUser?.likedRecipes.contains(recipe.id ?? "") == true ? .red : .gray)
+                        )
+                }
+            }
+            .padding(.trailing, 26)
+            .padding(.bottom, 12)
+            .zIndex(1)
         }
+
+        
         .onAppear {
             refreshRecipeData()
         }
@@ -152,7 +137,7 @@ struct RecipeCard_Previews: PreviewProvider {
             likeCount: 5,
             saveCount: 10
         )
-
+        
         let mockUserService = UserFirebaseService()
         mockUserService.currentUser = User(
             id: "user123",
@@ -164,9 +149,9 @@ struct RecipeCard_Previews: PreviewProvider {
             savedRecipes: ["sample1"],
             likedRecipes: []
         )
-
+        
         let mockRecipeService = RecipeService()
-
+        
         return RecipeCard(recipe: sampleRecipe)
             .environmentObject(mockUserService)
             .environmentObject(mockRecipeService)

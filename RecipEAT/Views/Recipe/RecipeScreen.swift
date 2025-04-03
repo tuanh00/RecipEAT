@@ -11,19 +11,15 @@ struct RecipeScreen: View {
     let recipes: [Recipe]
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    ForEach(recipes) { recipe in
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                ForEach(recipes) { recipe in
+                    NavigationLink(value: recipe) {
                         RecipeCard(recipe: recipe)
                     }
                 }
-                .padding(.vertical)
             }
-        }
-        .navigationDestination(for: Recipe.self) {
-            recipe in
-            RecipeDetails(recipe: recipe)
+            .padding(.vertical)
         }
     }
 }

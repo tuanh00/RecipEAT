@@ -7,12 +7,12 @@ struct PersonalRecipeScreen: View {
     @State private var allRecipes: [Recipe] = []
     @Binding var selectedTab: Int
     @State private var selectedList: RecipeListType = .saved
-
+    
     enum RecipeListType {
         case saved
         case liked
     }
-
+    
     var filteredRecipes: [Recipe] {
         guard let user = userService.currentUser else { return [] }
         switch selectedList {
@@ -22,60 +22,58 @@ struct PersonalRecipeScreen: View {
             return recipeService.filterRecipesByLikedList(allRecipes: allRecipes, likedIds: user.likedRecipes)
         }
     }
-
+    
     private var isPreview: Bool
-
+    
     init(selectedTab: Binding<Int>, previewRecipes: [Recipe] = []) {
         self._selectedTab = selectedTab
         self._allRecipes = State(initialValue: previewRecipes)
         self.isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
-
+    
     var body: some View {
-        NavigationStack {
-            VStack {
-                // Toggle Tabs UI
-                HStack(spacing: 12) {
-                    Button(action: {
-                        selectedList = .saved
-                    }) {
-                        Text("Saved List")
-                            .fontWeight(selectedList == .saved ? .bold : .regular)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(selectedList == .saved ? Color.gray.opacity(0.2) : Color.clear)
-                            .cornerRadius(10)
-                    }
-
-                    Button(action: {
-                        selectedList = .liked
-                    }) {
-                        Text("Liked List")
-                            .fontWeight(selectedList == .liked ? .bold : .regular)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(selectedList == .liked ? Color.gray.opacity(0.2) : Color.clear)
-                            .cornerRadius(10)
-                    }
+        VStack {
+            // Toggle Tabs UI
+            HStack(spacing: 12) {
+                Button(action: {
+                    selectedList = .saved
+                }) {
+                    Text("Saved List")
+                        .fontWeight(selectedList == .saved ? .bold : .regular)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(selectedList == .saved ? Color.gray.opacity(0.2) : Color.clear)
+                        .cornerRadius(10)
                 }
-                .padding(.horizontal)
-
-                // Render Recipes
-                if filteredRecipes.isEmpty {
-                    VStack {
-                        Spacer(minLength: 0)
-                        Text(selectedList == .saved ? "Let's save some recipes 🎉" : "No liked recipes yet 🙁")
-                            .foregroundColor(.gray)
-                            .padding()
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                } else {
-                    RecipeScreen(recipes: filteredRecipes)
+                
+                Button(action: {
+                    selectedList = .liked
+                }) {
+                    Text("Liked List")
+                        .fontWeight(selectedList == .liked ? .bold : .regular)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(selectedList == .liked ? Color.gray.opacity(0.2) : Color.clear)
+                        .cornerRadius(10)
                 }
             }
-            .navigationTitle("My Recipes")
+            .padding(.horizontal)
+            
+            // Render Recipes
+            if filteredRecipes.isEmpty {
+                VStack {
+                    Spacer(minLength: 0)
+                    Text(selectedList == .saved ? "Let's save some recipes 🎉" : "No liked recipes yet 🙁")
+                        .foregroundColor(.gray)
+                        .padding()
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            } else {
+                RecipeScreen(recipes: filteredRecipes)
+            }
         }
+        .navigationTitle("My Recipes")
         .onAppear {
             if !isPreview {
                 recipeService.fetchAllRecipes { fetched in
