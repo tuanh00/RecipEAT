@@ -72,10 +72,11 @@ class UserFirebaseService: ObservableObject {
     /// Uploads the default avatar image from the app’s assets to Firebase Storage.
     private func uploadDefaultAvatar(for user: FirebaseAuth.User, completion: @escaping (String?) -> Void) {
         guard let image = UIImage(named: "defaultAvatar"),
-              let imageData = image.jpegData(compressionQuality: 0.8) else {
+              let imageData = image.jpegDataCompressed(quality: 0.6, maxWidth: 1024) else {
             completion(nil)
             return
         }
+        
         let storageRef = storage.reference().child("userAvatars/\(user.uid).jpg")
         storageRef.putData(imageData, metadata: nil) { metadata, error in
             if let error = error {
@@ -83,12 +84,14 @@ class UserFirebaseService: ObservableObject {
                 completion(nil)
                 return
             }
+            
             storageRef.downloadURL { url, error in
                 if let error = error {
                     print("Error fetching download URL: \(error.localizedDescription)")
                     completion(nil)
                     return
                 }
+                
                 completion(url?.absoluteString)
             }
         }
@@ -195,7 +198,7 @@ class UserFirebaseService: ObservableObject {
             recipeDoc.updateData(["likeCount": FieldValue.increment(Int64(1))])
         }
         userDoc.updateData(["likedRecipes": updatedLiked]) {
-           error in
+            error in
             if error == nil {
                 DispatchQueue.main.async {
                     self.currentUser?.likedRecipes = updatedLiked
@@ -213,46 +216,46 @@ class UserFirebaseService: ObservableObject {
     }
     
     func updateProfile(displayName: String?, newPassword: String?, completion: @escaping (Error?) -> Void) {
-            guard let user = self.currentUser, let userId = user.id else {
-                completion(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user"]))
+        guard let user = self.currentUser, let userId = user.id else {
+            completion(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user"]))
+            return
+        }
+        var updates: [String: Any] = [:]
+        if displayName != user.displayName {
+            updates["displayName"] = displayName
+        }
+        if let newPassword = newPassword, !newPassword.isEmpty {
+            guard newPassword.count >= 6 else {
+                completion(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Password must be at least 6 characters long"]))
                 return
             }
-            var updates: [String: Any] = [:]
-            if displayName != user.displayName {
-                updates["displayName"] = displayName
-            }
-            if let newPassword = newPassword, !newPassword.isEmpty {
-                guard newPassword.count >= 6 else {
-                    completion(NSError(domain: "UserFirebaseService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Password must be at least 6 characters long"]))
-                    return
-                }
-                
-                let hashedPassword = Data(newPassword.utf8).base64EncodedString()
-                updates["password"] = hashedPassword
-                // Update FirebaseAuth password as well.
-                Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
-                    if let error = error {
-                        print("Error updating Auth password: \(error.localizedDescription)")
-                    }
-                }
-            }
-            if updates.isEmpty {
-                completion(nil)
-                return
-            }
-            let userDoc = db.collection("users").document(userId)
-            userDoc.updateData(updates) { error in
+            
+            let hashedPassword = Data(newPassword.utf8).base64EncodedString()
+            updates["password"] = hashedPassword
+            // Update FirebaseAuth password as well.
+            Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
                 if let error = error {
-                    completion(error)
-                } else {
-                    // Update local copy
-                    DispatchQueue.main.async {
-                        self.currentUser?.displayName = displayName!
-                    }
-                    completion(nil)
+                    print("Error updating Auth password: \(error.localizedDescription)")
                 }
             }
         }
+        if updates.isEmpty {
+            completion(nil)
+            return
+        }
+        let userDoc = db.collection("users").document(userId)
+        userDoc.updateData(updates) { error in
+            if let error = error {
+                completion(error)
+            } else {
+                // Update local copy
+                DispatchQueue.main.async {
+                    self.currentUser?.displayName = displayName!
+                }
+                completion(nil)
+            }
+        }
+    }
     
     func loadCurrentUser(completion: ((Error?) -> Void)? = nil) {
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -262,9 +265,9 @@ class UserFirebaseService: ObservableObject {
         db.collection("users").document(uid).getDocument { snapshot, error in
             if let error = error {
                 DispatchQueue.main.async {
-                        self.currentUser = nil
-                        try? Auth.auth().signOut()
-                    }
+                    self.currentUser = nil
+                    try? Auth.auth().signOut()
+                }
                 completion?(error)
             } else if let snapshot = snapshot, snapshot.exists,
                       let userData = try? snapshot.data(as: User.self) {
@@ -284,15 +287,17 @@ class UserFirebaseService: ObservableObject {
             completion(false, "No current user")
             return
         }
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+        guard let imageData = image.jpegDataCompressed(quality: 0.6, maxWidth: 1024) else {
             completion(false, "Invalid image")
             return
         }
+        
         // Safely unwrap user.id into userId
         guard let userId = user.id else {
             completion(false, "User ID is missing.")
             return
         }
+        
         let storageRef = storage.reference().child("userAvatars/\(userId).jpg")
         storageRef.putData(imageData, metadata: nil) { metadata, error in
             if let error = error {
@@ -310,6 +315,7 @@ class UserFirebaseService: ObservableObject {
                     completion(false, "Download URL not found")
                     return
                 }
+                
                 // Update Firestore user document with new avatar URL.
                 self.db.collection("users").document(userId).updateData([
                     "imageUrl": downloadURL
@@ -327,6 +333,4 @@ class UserFirebaseService: ObservableObject {
             }
         }
     }
-
-
 }

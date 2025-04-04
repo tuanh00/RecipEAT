@@ -30,6 +30,8 @@ struct CreateNewRecipeScreen: View {
     private let categories = ["Breakfast", "Brunch", "Lunch", "Snack", "Dinner", "Dessert"]
     private let units = ["g", "kg", "ml", "L", "tsp", "tbsp", "cup", "pcs", "oz", "lb"]
 
+    @State private var isPublishing = false
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -198,7 +200,7 @@ struct CreateNewRecipeScreen: View {
                                     .stroke(Color(hex: "#e28e91"), lineWidth: 1)
                             )
                     }
-                    .padding(.top, 4) // ✅ minimal gap
+                    .padding(.top, 4)
                 }
 
                 // Instructions
@@ -233,17 +235,21 @@ struct CreateNewRecipeScreen: View {
                                     .stroke(Color(hex: "#e28e91"), lineWidth: 1)
                             )
                     }
-                    .padding(.top, 4) // ✅ minimal gap
+                    .padding(.top, 4)
                 }
 
                 // Final Button
                 Button(action: {
+                    guard !isPublishing else { return }
                     guard !recipeTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                           !recipeDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                         alertMessage = "Please enter a title and description at least before publishing your recipe."
                         showAlert = true
                         return
                     }
+                    
+                    isPublishing = true // ✅ lock submission
+
                     recipeService.publishRecipe(
                         title: recipeTitle,
                         description: recipeDescription,

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct RoundedCorner: Shape {
     
@@ -48,5 +49,26 @@ extension Color {
             blue:  Double(b) / 255,
             opacity: Double(a) / 255
         )
+    }
+}
+
+/// Resize image to a target width (preserves aspect ratio) and compress as JPEG.
+extension UIImage {
+    func resized(toMaxWidth maxWidth: CGFloat) -> UIImage? {
+        let aspectRatio = size.height / size.width
+        let newWidth = min(maxWidth, size.width)
+        let newSize = CGSize(width: newWidth, height: newWidth * aspectRatio)
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        draw(in: CGRect(origin: .zero, size: newSize))
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return resizedImage
+    }
+    
+    func jpegDataCompressed(quality: CGFloat = 0.6, maxWidth: CGFloat = 1024) -> Data? {
+        guard let resized = self.resized(toMaxWidth: maxWidth) else {
+            return nil
+        }
+        return resized.jpegData(compressionQuality: quality)
     }
 }

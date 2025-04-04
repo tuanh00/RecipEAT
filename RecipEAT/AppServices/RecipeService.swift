@@ -62,10 +62,11 @@ class RecipeService: ObservableObject {
     
     // 2) Upload recipe image to Firebase Storage
     private func uploadRecipeImage(image: UIImage, completion: @escaping (Result<String, Error>) -> Void) {
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
-            completion(.failure(NSError(domain: "ImageEncoding", code: -1, userInfo: nil)))
+        guard let imageData = image.jpegDataCompressed(quality: 0.6, maxWidth: 1024) else {
+            completion(.failure(NSError(domain: "ImageEncoding", code: -1, userInfo: [NSLocalizedDescriptionKey: "Image compression failed."])))
             return
         }
+        
         let uniqueFileName = UUID().uuidString + ".jpg"
         let storageRef = storage.reference().child("recipes/\(uniqueFileName)")
         
