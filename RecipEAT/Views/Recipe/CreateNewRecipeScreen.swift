@@ -248,7 +248,7 @@ struct CreateNewRecipeScreen: View {
                         return
                     }
                     
-                    isPublishing = true // ✅ lock submission
+                    isPublishing = true 
 
                     recipeService.publishRecipe(
                         title: recipeTitle,
