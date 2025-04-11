@@ -67,111 +67,119 @@ struct SignInView: View {
     }
     
     var body: some View {
-        VStack(spacing: 24) {
-            Text("Sign In")
-                .customFont(.largeTitle)
+        ZStack
+        {
+            OnboardingView()
+                .blur(radius: 20)  
+                .opacity(0.8)
             
-            VStack(alignment: .leading) {
-                Text("Email")
-                    .customFont(.subheadline)
-                    .foregroundColor(.secondary)
-                AuthTextField(text: $email,
-                              placeholder: "Enter your email",
-                              icon: UIImage(named: "Icon Email"))
-                .frame(height: 50)
-                .keyboardType(.emailAddress)
+            VStack(spacing: 24) {
+                Text("Sign In")
+                    .customFont(.largeTitle)
+                
+                VStack(alignment: .leading) {
+                    Text("Email")
+                        .customFont(.subheadline)
+                        .foregroundColor(.secondary)
+                    AuthTextField(text: $email,
+                                  placeholder: "Enter your email",
+                                  icon: UIImage(named: "Icon Email"))
+                    .frame(height: 50)
+                    .keyboardType(.emailAddress)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Password")
+                        .customFont(.subheadline)
+                        .foregroundColor(.secondary)
+                    AuthTextField(text: $password,
+                                  placeholder: "Enter your password",
+                                  icon: UIImage(named: "Icon Lock"),
+                                  isSecure: true)
+                    .frame(height: 50)
+                }
+                
+                if !loginError.isEmpty {
+                    Text(loginError)
+                        .foregroundColor(.red)
+                        .customFont(.subheadline)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                Button {
+                    logInWithEmail()
+                } label: {
+                    Label("Sign In", systemImage: "arrow.right")
+                        .customFont(.headline)
+                        .padding(20)
+                        .frame(maxWidth: .infinity)
+                        .background(Color(hex: "F77D8E"))
+                        .foregroundColor(.white)
+                        .cornerRadius(20, corners: [.topRight, .bottomLeft, .bottomRight])
+                        .cornerRadius(8, corners: [.topLeft])
+                        .shadow(color: Color(hex: "F77D8E").opacity(0.5), radius: 20, x: 0, y: 10)
+                }
+                
+                // "Create Account" button
+                Button {
+                    showSignup = true
+                } label: {
+                    Text("Create Account")
+                        .customFont(.subheadline)
+                        .foregroundColor(Color(hex: "F77D8E"))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .fullScreenCover(isPresented: $showSignup) {
+                    SignupView(showModal: $showSignup)
+                }
+                
+                // Google sign in icon/button:
+                Button(action: {
+                    signInWithGoogle()
+                }) {
+                    Image("Logo Google")
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                }
+                .padding(.top, 20)
+                
             }
-            
-            VStack(alignment: .leading) {
-                Text("Password")
-                    .customFont(.subheadline)
-                    .foregroundColor(.secondary)
-                AuthTextField(text: $password,
-                              placeholder: "Enter your password",
-                              icon: UIImage(named: "Icon Lock"),
-                              isSecure: true)
-                .frame(height: 50)
+            .padding(30)
+            .background(.regularMaterial)
+            .mask(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: Color("Shadow").opacity(0.3), radius: 5, x: 0, y: 3)
+            .shadow(color: Color("Shadow").opacity(0.3), radius: 30, x: 0, y: 30)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(.linearGradient(colors: [.white.opacity(0.8), .white.opacity(0.1)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing))
+            )
+            .padding()
+            .overlay(
+                ZStack {
+                    if isLoading {
+                        check.view()
+                            .frame(width: 100, height: 100)
+                            .allowsHitTesting(false)
+                    }
+                }
+            )
+            .onAppear {
+                authVM.userService = userService
             }
-            
-            if !loginError.isEmpty {
-                Text(loginError)
-                    .foregroundColor(.red)
-                    .customFont(.subheadline)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            
-            Button {
-                logInWithEmail()
-            } label: {
-                Label("Sign In", systemImage: "arrow.right")
-                    .customFont(.headline)
-                    .padding(20)
-                    .frame(maxWidth: .infinity)
-                    .background(Color(hex: "F77D8E"))
-                    .foregroundColor(.white)
-                    .cornerRadius(20, corners: [.topRight, .bottomLeft, .bottomRight])
-                    .cornerRadius(8, corners: [.topLeft])
-                    .shadow(color: Color(hex: "F77D8E").opacity(0.5), radius: 20, x: 0, y: 10)
-            }
-            
-            // "Create Account" button
-            Button {
-                showSignup = true
-            } label: {
-                Text("Create Account")
-                    .customFont(.subheadline)
-                    .foregroundColor(Color(hex: "F77D8E"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(PlainButtonStyle())
-            .fullScreenCover(isPresented: $showSignup) {
-                SignupView(showModal: $showSignup)
-            }
-            
-            // Google sign in icon/button:
-            Button(action: {
-                signInWithGoogle()
-            }) {
-                Image("Logo Google")
-                    .resizable()
-                    .frame(width: 50, height: 50)
-            }
-            .padding(.top, 20)
-            
-        }
-        .padding(30)
-        .background(.regularMaterial)
-        .mask(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .shadow(color: Color("Shadow").opacity(0.3), radius: 5, x: 0, y: 3)
-        .shadow(color: Color("Shadow").opacity(0.3), radius: 30, x: 0, y: 30)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(.linearGradient(colors: [.white.opacity(0.8), .white.opacity(0.1)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing))
-        )
-        .padding()
-        .overlay(
-            ZStack {
-                if isLoading {
-                    check.view()
-                        .frame(width: 100, height: 100)
-                        .allowsHitTesting(false)
+            .onReceive(authVM.$isLoginSuccessed) {
+                success in
+                if success {
+                    withAnimation {
+                        showModal = false
+                    }
                 }
             }
-        )
-        .onAppear {
-            authVM.userService = userService
         }
-        .onReceive(authVM.$isLoginSuccessed) {
-            success in
-            if success {
-                withAnimation {
-                    showModal = false
-                }
-            }
-        }
-    }
+        
+    }//end of body
 }
 
 #Preview {

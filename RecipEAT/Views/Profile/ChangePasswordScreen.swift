@@ -71,6 +71,11 @@ struct ChangePasswordScreen: View {
                         return
                     }
                     
+                    guard newPassword.count >= 6 else {
+                        saveError = "Password must be at least 6 characters."
+                        return
+                    }
+                    
                     guard newPassword == confirmPassword else {
                         saveError = "Passwords do not match."
                         confirmPassword = "" //clear field
