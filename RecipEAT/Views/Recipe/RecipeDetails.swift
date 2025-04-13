@@ -9,13 +9,17 @@ import SwiftUI
 
 struct RecipeDetails: View {
     let recipe: Recipe
+    let isMyRecipe: Bool
+
     @EnvironmentObject var recipeService: RecipeService
+    @Environment(\.dismiss) var dismiss  // Added dismiss environment variable
     @State private var latestRecipe: Recipe?
+    @State private var navigateToUpdate = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                // Image
+
                 AsyncImage(url: URL(string: latestRecipe?.imageUrl ?? recipe.imageUrl)) { image in
                     image
                         .resizable()
@@ -27,16 +31,13 @@ struct RecipeDetails: View {
                 .clipped()
                 .cornerRadius(12)
 
-                // Title
                 Text((latestRecipe?.title ?? recipe.title).capitalized)
                     .font(.largeTitle)
                     .fontWeight(.bold)
 
-                // Description
                 Text((latestRecipe?.description ?? recipe.description).capitalized)
                     .font(.body)
 
-                // Servings, Likes, Saves
                 HStack(spacing: 16) {
                     HStack(spacing: 4) {
                         Image(systemName: "person.2.fill")
@@ -60,12 +61,12 @@ struct RecipeDetails: View {
 
                 Divider()
 
-                // Ingredients
                 Text("Ingredients")
                     .font(.title2)
                     .fontWeight(.semibold)
 
-                ForEach((latestRecipe?.ingredients ?? recipe.ingredients), id: \.name) { ingredient in
+                // CHANGED: Using the enumerated offset as the unique ID instead of the ingredient name
+                ForEach(Array((latestRecipe?.ingredients ?? recipe.ingredients).enumerated()), id: \.offset) { index, ingredient in
                     HStack {
                         Image(systemName: "circle.fill")
                             .font(.system(size: 6))
@@ -76,7 +77,6 @@ struct RecipeDetails: View {
 
                 Divider()
 
-                // Instructions
                 Text("Instructions")
                     .font(.title2)
                     .fontWeight(.semibold)
@@ -93,42 +93,39 @@ struct RecipeDetails: View {
         }
         .navigationTitle("Recipe Details")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            // Live fresh UI
-            if let recipeId = recipe.id {
-                recipeService.fetchRecipeById(recipeId) { updated in
-                    if let updated = updated {
-                        DispatchQueue.main.async {
-                            latestRecipe = updated
-                        }
+        .toolbar {
+            if isMyRecipe {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        navigateToUpdate = true
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .rotationEffect(.degrees(90))
                     }
                 }
             }
         }
+        .navigationDestination(isPresented: $navigateToUpdate) {
+            UpdateRecipeScreen(recipe: latestRecipe ?? recipe)
+        }
+        .onAppear {
+            fetchLatestRecipe()
+        }
     }
-}
 
-#Preview {
-    RecipeDetails(
-        recipe: Recipe(
-            id: "sample1",
-            imageUrl: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            title: "Creamy Tomato Pasta",
-            description: "A creamy delicious tomato-based pasta perfect for quick dinner.",
-            ingredients: [
-                Ingredients(name: "Tomato", quantity: "2", unit: "units"),
-                Ingredients(name: "Cream", quantity: "200", unit: "grams"),
-                Ingredients(name: "Pasta", quantity: "1", unit: "pack")
-            ],
-            instructions: ["Boil pasta", "Prepare sauce", "Mix and serve"],
-            userId: "ClCmQWjsj4ZuGqLnzDyxM8EbFj83",
-            category: "Dinner",
-            review: ["Ok"],
-            servings: 2,
-            createdAt: Date.now,
-            isPublished: true,
-            likeCount: 10,
-            saveCount: 5
-        )
-    )
+    /// Modified fetch method:
+    /// If the recipe is not found (deleted), dismiss this view.
+    private func fetchLatestRecipe() {
+        guard let recipeId = recipe.id else { return }
+        recipeService.fetchRecipeById(recipeId) { updated in
+            DispatchQueue.main.async {
+                if let updated = updated {
+                    latestRecipe = updated
+                } else {
+                    // Recipe not found—likely deleted—so dismiss this view.
+                    dismiss()
+                }
+            }
+        }
+    }
 }

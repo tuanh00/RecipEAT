@@ -57,22 +57,49 @@ class MealPlanService: ObservableObject {
     
     //Adds a new Meal to the MealPlan document's meals array
     func addMeal(to planId: String, meal: Meal, completion: @escaping (Bool, Error?) -> Void) {
-        let planRef = db.collection("mealPlans").document(planId)
-        do {
-            let mealData = try Firestore.Encoder().encode(meal)
-            planRef.updateData([
-                "meals": FieldValue.arrayUnion([mealData])
-            ]) {
-                error in
-                if let error = error {
-                    completion(false, error)
-                } else {
-                    completion(true, nil)
-                }
-            }
-        } catch {
-            completion(false, error)
+        let docRef = db.collection("mealPlans").document(planId)
+        docRef.updateData([
+            "meals": FieldValue.arrayUnion([[
+                "id": UUID().uuidString,
+                "recipeName": meal.recipeName,
+                "date": Timestamp(date: meal.date),
+                "notes": meal.notes,
+                "category": meal.category
+            ]])
+        ]) { error in
+            completion(error == nil, error)
         }
+    }
+    
+    // Search Recipes by Name Prefix
+    func searchRecipes(prefix: String, completion: @escaping ([Recipe], Error?) -> Void) {
+        db.collection("recipes")
+            .whereField("isPublished", isEqualTo: true)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    completion([], error)
+                    return
+                }
+                
+                guard let documents = snapshot?.documents else {
+                    completion([], nil)
+                    return
+                }
+                
+                // Case-insensitive search: match prefix in title or description
+                let matchedRecipes = documents.compactMap { doc -> Recipe? in
+                    let recipe = try? doc.data(as: Recipe.self)
+                    if let recipe = recipe {
+                        if recipe.title.lowercased().contains(prefix.lowercased()) ||
+                            recipe.description.lowercased().contains(prefix.lowercased()) {
+                            return recipe
+                        }
+                    }
+                    return nil
+                }
+                
+                completion(matchedRecipes, nil)
+            }
     }
     
     func deleteMeal(from planId: String, meal: Meal, completion: @escaping(Bool, Error?) -> Void) {

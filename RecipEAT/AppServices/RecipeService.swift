@@ -39,29 +39,52 @@ class RecipeService: ObservableObject {
         }
     }
     
-    func publishRecipe(title: String,
-                       description: String,
-                       ingredients: [Ingredients],
-                       instructions: [String],
-                       servings: Int,
-                       category: String,
-                       image: UIImage?,
-                       isPublished: Bool,
-                       completion: @escaping (Bool, String?) -> Void) {
-        let lowerTitle = title.lowercased()
-        let lowerDesc = description.lowercased()
+    // Publish New Recipe
+    func publishRecipe(title: String, description: String, ingredients: [Ingredients], instructions: [String], servings: Int, category: String, image: UIImage?, isPublished: Bool, completion: @escaping (Bool, String?) -> Void) {
         
-        guard let currentUserId = Auth.auth().currentUser?.uid else {
-            completion(false, "User not logged in.")
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(false, "User not logged in")
             return
         }
+
+        let recipeRef = db.collection("recipes").document()
         
-        let recipe = Recipe(imageUrl: "", title: lowerTitle, description: lowerDesc, ingredients: ingredients, instructions: instructions, userId: currentUserId, category: category, review: [], servings: servings, createdAt: Date(), isPublished: isPublished, likeCount: 0, saveCount: 0)
-        createRecipe(recipe: recipe, image: image, completion: completion)
+        func uploadData(imageUrl: String) {
+            let data: [String: Any] = [
+                "id": recipeRef.documentID,
+                "title": title,
+                "description": description,
+                "ingredients": ingredients.map { ["name": $0.name, "quantity": $0.quantity, "unit": $0.unit] },
+                "instructions": instructions,
+                "servings": servings,
+                "category": category,
+                "imageUrl": imageUrl,
+                "isPublished": isPublished,
+                "userId": userId,
+                "createdAt": FieldValue.serverTimestamp(),
+                "likeCount": 0,
+                "saveCount": 0,
+                "review": []
+            ]
+            recipeRef.setData(data) { error in
+                completion(error == nil, error?.localizedDescription)
+            }
+        }
+
+        if let image = image {
+            uploadRecipeImage(image: image) { result in
+                switch result {
+                case .success(let url): uploadData(imageUrl: url)
+                case .failure(let error): completion(false, error.localizedDescription)
+                }
+            }
+        } else {
+            uploadData(imageUrl: "")
+        }
     }
     
     // 2) Upload recipe image to Firebase Storage
-    private func uploadRecipeImage(image: UIImage, completion: @escaping (Result<String, Error>) -> Void) {
+    func uploadRecipeImage(image: UIImage, completion: @escaping (Result<String, Error>) -> Void) {
         guard let imageData = image.jpegDataCompressed(quality: 0.6, maxWidth: 1024) else {
             completion(.failure(NSError(domain: "ImageEncoding", code: -1, userInfo: [NSLocalizedDescriptionKey: "Image compression failed."])))
             return
@@ -105,11 +128,10 @@ class RecipeService: ObservableObject {
         }
     }
     
-    // 4) Delete an existing recipe
-    func deleteRecipe(recipeId: String, completion: @escaping (Bool, String?) -> Void) {
+    func deleteRecipe(recipeId: String, userId: String, completion: @escaping (Bool, String?) -> Void) {
         db.collection("recipes").document(recipeId).delete { error in
             if let error = error {
-                completion(false, "Failed to delete recipe: \(error.localizedDescription)")
+                completion(false, error.localizedDescription)
             } else {
                 completion(true, nil)
             }
@@ -117,60 +139,34 @@ class RecipeService: ObservableObject {
     }
     
     // 5) Searches recipes whose title OR description starts with a given prefix
+    /// Search recipes where isPublished == true
+    /// Search by title or description containing the query (case-insensitive)
     func searchRecipes(prefix: String, completion: @escaping ([Recipe], Error?) -> Void) {
-        let lowerPrefix = prefix.lowercased()
-        let collection = db.collection("recipes")
-        var results: [Recipe] = []
-        var errors: [Error] = []
-        
-        let group = DispatchGroup()
-        
-        // 1) Query for matching titles (case-insensitive)
-        group.enter()
-        collection
-            .whereField("title", isGreaterThanOrEqualTo: lowerPrefix)
-            .whereField("title", isLessThan: lowerPrefix + "\u{f8ff}")
+        let lowercasedQuery = prefix.lowercased()
+
+        db.collection("recipes")
+            .whereField("isPublished", isEqualTo: true)
             .getDocuments { snapshot, error in
                 if let error = error {
-                    errors.append(error)
-                } else if let snapshot = snapshot {
-                    let found = snapshot.documents.compactMap { doc in
-                        try? doc.data(as: Recipe.self)
-                    }
-                    results.append(contentsOf: found)
+                    completion([], error)
+                    return
                 }
-                group.leave()
-            }
-        
-        // 2) Query for matching descriptions (case-insensitive)
-        group.enter()
-        collection
-            .whereField("description", isGreaterThanOrEqualTo: lowerPrefix)
-            .whereField("description", isLessThan: lowerPrefix + "\u{f8ff}")
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    errors.append(error)
-                } else if let snapshot = snapshot {
-                    let found = snapshot.documents.compactMap { doc in
-                        try? doc.data(as: Recipe.self)
+
+                let recipes = snapshot?.documents.compactMap { document -> Recipe? in
+                    let data = document.data()
+                    let title = (data["title"] as? String)?.lowercased() ?? ""
+                    let description = (data["description"] as? String)?.lowercased() ?? ""
+
+                    if title.contains(lowercasedQuery) || description.contains(lowercasedQuery) {
+                        return try? document.data(as: Recipe.self)
                     }
-                    results.append(contentsOf: found)
-                }
-                group.leave()
+                    return nil
+                } ?? []
+
+                completion(recipes, nil)
             }
-        
-        // Combine results once both queries finish
-        group.notify(queue: .main) {
-            let uniqueResults = Dictionary(grouping: results, by: \.id)
-                .compactMap { $0.value.first }
-            if let firstError = errors.first {
-                completion(Array(uniqueResults), firstError)
-            } else {
-                completion(Array(uniqueResults), nil)
-            }
-        }
     }
-    
+
     // 6) Display recipes
     func fetchAllRecipes(completion: @escaping ([Recipe]) -> Void) {
         db.collection("recipes").getDocuments {
@@ -230,6 +226,37 @@ class RecipeService: ObservableObject {
             } else {
                 completion(nil)
             }
+        }
+    }
+    
+    func fetchRecipesByCurrentUser(userId: String, completion: @escaping ([Recipe]) -> Void) {
+        db.collection("recipes").whereField("userId", isEqualTo: userId).getDocuments { snapshot, error in
+            if let error = error {
+                print("Fetch Error: \(error.localizedDescription)")
+                completion([])
+                return
+            }
+            let recipes = snapshot?.documents.compactMap { try? $0.data(as: Recipe.self) } ?? []
+            completion(recipes)
+        }
+    }
+    
+    // Update Recipe
+    func updateRecipe(recipeId: String, title: String, description: String, ingredients: [Ingredients], instructions: [String], servings: Int, isPublished: Bool, newImageUrl: String? = nil, completion: @escaping (Bool, String?) -> Void) {
+        var updateData: [String: Any] = [
+            "title": title,
+            "description": description,
+            "ingredients": ingredients.map { ["name": $0.name, "quantity": $0.quantity, "unit": $0.unit] },
+            "instructions": instructions,
+            "servings": servings,
+            "isPublished": isPublished
+        ]
+        if let newImageUrl = newImageUrl {
+            updateData["imageUrl"] = newImageUrl
+        }
+        
+        db.collection("recipes").document(recipeId).updateData(updateData) { error in
+            completion(error == nil, error?.localizedDescription)
         }
     }
 }

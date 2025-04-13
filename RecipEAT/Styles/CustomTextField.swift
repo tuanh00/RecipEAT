@@ -14,6 +14,8 @@ struct CustomTextField: ViewModifier {
             .padding(.vertical, 10)
             .background(Color.gray.opacity(0.1))
             .cornerRadius(16)
+            .disableAutocorrection(true)
+            .textInputAutocapitalization(.never)
     }
 }
 

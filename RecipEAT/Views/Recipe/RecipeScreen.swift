@@ -1,20 +1,16 @@
-//
-//  RecipeScreen.swift
-//  RecipEAT
-//
-//  Created by LaSalle on 2025-03-16.
-//
+// RecipeScreen.swift
 
 import SwiftUI
 
 struct RecipeScreen: View {
     let recipes: [Recipe]
-    
+    var isMyRecipes: Bool = false
+
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
                 ForEach(recipes) { recipe in
-                    NavigationLink(value: recipe) {
+                    NavigationLink(value: RecipeWrapper(recipe: recipe, isMyRecipe: isMyRecipes)) {
                         RecipeCard(recipe: recipe)
                     }
                 }
@@ -23,7 +19,3 @@ struct RecipeScreen: View {
         }
     }
 }
-
-//#Preview {
-//    RecipeScreen()
-//}

@@ -18,7 +18,7 @@ struct ContentView: View {
                 }
                 .tag(0)
             
-            PersonalRecipeScreen(selectedTab: $selectedTab)
+            PersonalRecipeScreen()
                 .tabItem {
                     Image(systemName: "book.pages.fill")
                 }.tag(1)
@@ -39,12 +39,15 @@ struct ContentView: View {
                 }.tag(4)
             
         }
-        .navigationDestination(for: Recipe.self) { recipe in
-            RecipeDetails(recipe: recipe)
+        .navigationDestination(for: RecipeWrapper.self) { wrapper in
+            RecipeDetails(recipe: wrapper.recipe, isMyRecipe: wrapper.isMyRecipe)
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("GoToHomeTab"))) {
             _ in
             selectedTab = 0
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("GoToMyRecipesTab"))) { _ in
+            selectedTab = 1  // PersonalRecipeScreen
         }
     }
 }
