@@ -55,19 +55,18 @@ class MealPlanService: ObservableObject {
         }
     }
     
-    //Adds a new Meal to the MealPlan document's meals array
     func addMeal(to planId: String, meal: Meal, completion: @escaping (Bool, Error?) -> Void) {
         let docRef = db.collection("mealPlans").document(planId)
-        docRef.updateData([
-            "meals": FieldValue.arrayUnion([[
-                "id": UUID().uuidString,
-                "recipeName": meal.recipeName,
-                "date": Timestamp(date: meal.date),
-                "notes": meal.notes,
-                "category": meal.category
-            ]])
-        ]) { error in
-            completion(error == nil, error)
+        do {
+            // Use the same encoding approach for consistency.
+            let mealData = try Firestore.Encoder().encode(meal)
+            docRef.updateData([
+                "meals": FieldValue.arrayUnion([mealData])
+            ]) { error in
+                completion(error == nil, error)
+            }
+        } catch {
+            completion(false, error)
         }
     }
     
@@ -102,15 +101,13 @@ class MealPlanService: ObservableObject {
             }
     }
     
-    func deleteMeal(from planId: String, meal: Meal, completion: @escaping(Bool, Error?) -> Void) {
+    func deleteMeal(from planId: String, meal: Meal, completion: @escaping (Bool, Error?) -> Void) {
         let planRef = db.collection("mealPlans").document(planId)
         do {
             let mealData = try Firestore.Encoder().encode(meal)
-            
             planRef.updateData([
                 "meals": FieldValue.arrayRemove([mealData])
-            ]) {
-                error in
+            ]) { error in
                 if let error = error {
                     completion(false, error)
                 } else {
@@ -121,4 +118,5 @@ class MealPlanService: ObservableObject {
             completion(false, error)
         }
     }
+
 }

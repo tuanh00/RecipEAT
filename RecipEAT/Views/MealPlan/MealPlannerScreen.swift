@@ -48,8 +48,9 @@ struct MealPlannerScreen: View {
                     ForEach(0..<7, id: \.self) { offset in
                         let day = Calendar.current.date(byAdding: .day, value: offset, to: plan.startDate)!
                         Section(header: Text(formattedDate(day))) {
+                            // Compute the meals for the day and sort them
                             let dayMeals = plan.meals.filter { isSameDay($0.date, day) }
-                                .sorted { $0.date < $1.date }
+                                                      .sorted { $0.date < $1.date }
                             if dayMeals.isEmpty {
                                 Button("+ Add meal") {
                                     selectedDate = day
@@ -62,15 +63,25 @@ struct MealPlannerScreen: View {
                                             .resizable()
                                             .frame(width: 20, height: 20)
                                             .padding(.trailing, 8)
-                                        
                                         Text(meal.recipeName)
                                             .customFont(.headline)
-                                        
                                         Spacer()
-                                        
                                         Text(meal.notes)
                                             .foregroundColor(.secondary)
                                     }
+                                }
+                                .onDelete { offsets in
+                                    // Iterate over the offsets (each corresponds to an index in the dayMeals array)
+                                    for index in offsets {
+                                        let mealToDelete = dayMeals[index]
+                                        mealPlanService.deleteMeal(from: plan.id ?? "", meal: mealToDelete) { success, error in
+                                            if !success, let error = error {
+                                                errorMessage = error.localizedDescription
+                                            }
+                                        }
+                                    }
+                                    // Refresh the MealPlan after deletion to update the UI
+                                    loadMealPlan()
                                 }
                                 Button("+ Add meal") {
                                     selectedDate = day
