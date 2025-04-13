@@ -24,8 +24,6 @@ struct ChangeNameScreen: View {
                     .padding(.top, 40)
                 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("New Name")
-                        .font(.headline)
                     TextField("Enter new display name", text: $newName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .disableAutocorrection(true)
@@ -46,10 +44,10 @@ struct ChangeNameScreen: View {
                         .padding(.horizontal)
                 }
                 
-                Button("Update") {
-                    //clear error msg before processing
+                Button(action: {
+                    // clear error msg before processing
                     saveError = ""
-                    
+
                     guard !newName.isEmpty else {
                         saveError = "Display name cannot be empty."
                         return
@@ -67,12 +65,14 @@ struct ChangeNameScreen: View {
                             }
                         }
                     }
+                }) {
+                    Text("Update")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .foregroundColor(.white)
-                .background(Color.blue)
-                .cornerRadius(10)
                 
                 Spacer()
             }

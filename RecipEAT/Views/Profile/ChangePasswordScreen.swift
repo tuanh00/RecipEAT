@@ -62,8 +62,8 @@ struct ChangePasswordScreen: View {
                         .padding(.horizontal)
                 }
                 
-                Button("Update") {
-                    //clear error msg before processing
+                Button(action: {
+                    // Clear error message before processing.
                     saveError = ""
                     
                     guard !newPassword.isEmpty else {
@@ -78,8 +78,8 @@ struct ChangePasswordScreen: View {
                     
                     guard newPassword == confirmPassword else {
                         saveError = "Passwords do not match."
-                        confirmPassword = "" //clear field
-                        isPasswordFieldFocused = true //refocus on confirm password field
+                        confirmPassword = "" // Clear field.
+                        isPasswordFieldFocused = true // Refocus on confirm password field.
                         return
                     }
                     
@@ -99,12 +99,14 @@ struct ChangePasswordScreen: View {
                             }
                         }
                     }
+                }) {
+                    Text("Update")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.accentColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .foregroundColor(.white)
-                .background(Color.blue)
-                .cornerRadius(10)
                 
                 Spacer()
             }
