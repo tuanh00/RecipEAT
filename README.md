@@ -30,6 +30,7 @@ RecipEAT is a mobile application designed for food enthusiasts to share, discove
 - Rive animations for engaging UI elements
 
 ## Project Structure
+```test
 RecipEAT/
 ├── AppServices/
 │ ├── Application.swift
@@ -75,7 +76,7 @@ RecipEAT/
 ├── RecipEAT.xcodeproj/
 ├── .gitignore
 ├── README.md
-
+```
 
 ## Getting Started
 
